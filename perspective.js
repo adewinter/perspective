@@ -21,11 +21,11 @@ let colorList = [0x922606, 0x69E216, 0xEC2EA3, 0x60DCDA, 0xD76A9A, 0x1521DA, 0xD
 const portalWidth = 40;
 const portalHeight = 60;
 
-let worldCamPosEl, portalCamPosEl, refplaneCamPosEl;
+let worldCamPosEl, portalCamPosEl, refMeshCamPosEl;
 
-let portalPlane, refPlane;
+let portalMesh, portalTexture, refMesh;
 
-let refTL, refBL, refBR
+let refMeshTL, refMeshBL, refMeshBR
 
 
 init();
@@ -167,7 +167,10 @@ function createOrnament() {
     return ornamentGroup;
 }
 
-function createRefPlane() {
+function createrefMesh() {
+    refMeshBL = new THREE.Vector3();
+    refMeshBR = new THREE.Vector3();
+    refMeshTL = new THREE.Vector3();
     const planeGeo = new THREE.PlaneGeometry( portalWidth, portalHeight );
     const planeMat = new THREE.MeshBasicMaterial({opacity: 0.0, wireframe: true});
     const planeMesh = new THREE.Mesh(planeGeo, planeMat);
@@ -175,11 +178,11 @@ function createRefPlane() {
     return planeMesh;
 }
 
-function createPortalPlane() {
+function createportalMesh() {
     const portalGeo = new THREE.PlaneGeometry( portalWidth, portalHeight );
-    const portalTextureXResolution = 256*portalWidth/portalHeight;
-    const portalTextureYResolution = 256;
-    const portalTexture = new THREE.WebGLRenderTarget(portalTextureXResolution, portalTextureYResolution);
+    const portalTextureXResolution = 1024*portalWidth/portalHeight;
+    const portalTextureYResolution = 1024;
+    portalTexture = new THREE.WebGLRenderTarget(portalTextureXResolution, portalTextureYResolution);
 
     const portal = new THREE.Mesh( portalGeo, new THREE.MeshBasicMaterial( { map: portalTexture.texture } ) );
 
@@ -192,48 +195,32 @@ function vecToString(vec) {
     return 'x:' + vec.x.toFixed() + ',\ty:' + vec.y.toFixed() + ',\tz:' + vec.z.toFixed();
 }
 
-function movePortalCameraRelativeToMainCamera(){
-    let world_MainCameraPosition = mainCamera.position.clone();
-    worldCamPosEl.innerText = vecToString(world_MainCameraPosition);
-
-    let portal_MainCameraPosition = world_MainCameraPosition.clone()
-    portalPlane.worldToLocal(portal_MainCameraPosition);
-    portalCamPosEl.innerText = vecToString(portal_MainCameraPosition)
-
-    //converts portalCameraPosition vector from worldSpace to refPlane local space
-    let world_PortalCameraPosition = portal_MainCameraPosition.clone()
-    refPlane.localToWorld(world_PortalCameraPosition);
-    refplaneCamPosEl.innerText = vecToString(world_PortalCameraPosition);
-
-    //sets portalCamera position to that of refPlane.position
-    portalCamera.position.copy(world_PortalCameraPosition)
-}
-
 function createScene() {
     const room1 = createRoom();
-        portalPlane = createPortalPlane();
-        portalPlane.position.z = -30;
-        room1.add(portalPlane);
+        portalMesh = createportalMesh();
+        portalMesh.position.z = -30;
+        room1.add(portalMesh);
     scene.add(room1);
     
     const room2 = createRoom();
         const ornament = createOrnament();
         ornament.position.z = -20;
         room2.add(ornament);
-        refPlane = createRefPlane();
-        refPlane.position.z = 35;
-        room2.add(refPlane);
+        const otherOrn = createOrnament();
+        otherOrn.position.z = 45;
+        otherOrn.position.x = 10;
+        room2.add(otherOrn);
+        refMesh = createrefMesh();
+        refMesh.position.z = 35;
+        room2.add(refMesh);
     room2.position.x = 150;
     scene.add(room2);
-
-    
-
 }
 
 function initDomEls() {
     worldCamPosEl = document.querySelector('#worldCamPos');
     portalCamPosEl = document.querySelector('#portalCamPos');
-    refplaneCamPosEl = document.querySelector('#refplaneCamPos');
+    refMeshCamPosEl = document.querySelector('#refMeshCamPos');
 }
 
 function init() {
@@ -249,16 +236,69 @@ function init() {
     
 }
 
-
 function updateControls() {
     const delta = clock.getDelta();
     cameraControls.update( delta )
+}
+
+function movePortalCameraRelativeToMainCamera(){
+    let world_MainCameraPosition = mainCamera.position.clone();
+    worldCamPosEl.innerText = vecToString(world_MainCameraPosition);
+
+    let portal_MainCameraPosition = world_MainCameraPosition.clone()
+    portalMesh.worldToLocal(portal_MainCameraPosition);
+    portalCamPosEl.innerText = vecToString(portal_MainCameraPosition)
+
+    //converts portalCameraPosition vector from worldSpace to refMesh local space
+    let world_PortalCameraPosition = portal_MainCameraPosition.clone()
+    refMesh.localToWorld(world_PortalCameraPosition);
+    refMeshCamPosEl.innerText = vecToString(world_PortalCameraPosition);
+
+    //sets portalCamera position to that of refMesh.position
+    portalCamera.position.copy(world_PortalCameraPosition)
+}
+
+function renderPortal() {
+    // save the original camera properties
+    const currentRenderTarget = renderer.getRenderTarget();
+    const currentXrEnabled = renderer.xr.enabled;
+    const currentShadowAutoUpdate = renderer.shadowMap.autoUpdate;
+    renderer.xr.enabled = false; // Avoid camera modification
+    renderer.shadowMap.autoUpdate = false; // Avoid re-computing shadows
+
+    // find refMesh corners;
+    refMeshBL.set(-portalWidth/2, -portalHeight/2, 0);
+    refMesh.localToWorld(refMeshBL);
+
+    refMeshBR.set(portalWidth/2, -portalHeight/2, 0);
+    refMesh.localToWorld(refMeshBR);
+
+    refMeshTL.set(-portalWidth/2, portalHeight/2, 0);
+    refMesh.localToWorld(refMeshTL);
+
+    // render the portal effect
+    CameraUtils.frameCorners(portalCamera, refMeshBL, refMeshBR, refMeshTL, false);
+
+    portalTexture.texture.encoding = renderer.outputEncoding;
+
+    renderer.setRenderTarget( portalTexture );
+    renderer.state.buffers.depth.setMask( true ); // make sure the depth buffer is writable so it can be properly cleared, see #18897
+    if ( renderer.autoClear === false ) renderer.clear();
+    portalMesh.visible = false; // hide this portal from its own rendering
+    renderer.render( scene, portalCamera );
+    portalMesh.visible = true; // re-enable this portal's visibility for general rendering
+
+    // restore the original rendering properties
+    renderer.xr.enabled = currentXrEnabled;
+    renderer.shadowMap.autoUpdate = currentShadowAutoUpdate;
+    renderer.setRenderTarget( currentRenderTarget );
 }
 
 function animate() {
     requestAnimationFrame(animate);
     updateControls();
     movePortalCameraRelativeToMainCamera();
+    renderPortal()
     renderer.render(scene, mainCamera);
     stats.update();
 }
