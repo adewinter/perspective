@@ -17,8 +17,18 @@
 export function setupStats() {
   const stats = new Stats();
   stats.customFpsPanel = stats.addPanel(new Stats.Panel('FPS', '#0ff', '#002'));
-  stats.showPanel(stats.domElement.children.length - 1);
+  stats.xPanel = stats.addPanel( new Stats.Panel( 'x', '#ff8', '#221' ) );
+  stats.yPanel = stats.addPanel( new Stats.Panel( 'y', '#f8f', '#212' ) );
+  stats.zPanel = stats.addPanel( new Stats.Panel( 'z', '#0ff', '#002' ) );
+  // stats.showPanel(stats.domElement.children.length - 1);
+  stats.showPanel(4);
+  // stats.showPanel(5);
+  // stats.showPanel(6);
 
+
+  for (var i=3; i<stats.domElement.children.length; i++) {
+    stats.domElement.children[i].style.display = 'block';
+  }
   const parent = document.getElementById('stats');
   parent.appendChild(stats.domElement);
 

@@ -86,11 +86,20 @@ function rendercoords (kp, kp3d) {
     posZEl.innerText = avgz.toFixed(4);
     calcZEl.innerText = (0.6/avgz).toFixed(4);
 
+    stats.xPanel.update(avgx, 370);
+    stats.yPanel.update(avgy, 370);
+    stats.zPanel.update(-200/avgz, 370);
+
+
     [avgx, avgy, avgz, calcz] = getCoordsFromKeypoint(kp3d);
     posX3dEl.innerText = avgx.toFixed(4);
     posY3dEl.innerText = avgy.toFixed(4);
     posZ3dEl.innerText = avgz.toFixed(4);
     calcZ3dEl.innerText = (0.6/avgz).toFixed(4);
+
+    // stats.xPanel.update((avgx+0.2)*100, 100);
+    // stats.yPanel.update(-100*avgy, 100);
+    // stats.zPanel.update(-100*avgz, 100);
 }
 
 let counter = 0;
