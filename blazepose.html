@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>three.js webgl - portal</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <style>
+            body {
+                color: #444;
+            }
+            a {
+                color: #08f;
+            }
+
+            #info {
+                color: white;
+                position:  absolute;
+            }
+        </style>
+        <!-- Require the peer dependencies of pose-detection. -->
+        <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+
+        <!-- You must explicitly require a TF.js backend if you're not using the TF.js union bundle. -->
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+
+        <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@0.0.6"></script> -->
+        <script src="./blazepose/blazepose.js" type="module"></script>
+    </head>
+    <body>
+    </body>
+</html>

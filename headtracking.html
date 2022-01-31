@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>three.js webgl - portal</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <style>
+            body {
+                color: #444;
+            }
+            a {
+                color: #08f;
+            }
+
+            #info {
+                color: white;
+                position:  absolute;
+            }
+
+            #position {
+                display: flex;
+            }
+
+            #position div {
+                padding: 10px;
+                border: 1px solid black;
+                margin: 5px;
+            }
+
+             #position3d {
+                display: flex;
+            }
+
+            #position3d div {
+                padding: 10px;
+                border: 1px solid black;
+                margin: 5px;
+            }
+
+            #main {
+              position: relative;
+              margin: 0;
+            }
+            #canvas-wrapper,
+            #scatter-gl-container {
+              position: relative;
+            }
+        </style>
+        <!-- Import maps polyfill -->
+        <!-- Remove this when import maps will be widely supported -->
+        <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+
+        <!-- Require the peer dependencies of pose-detection. -->
+        <script src="headtracking/tfjs-core.js"></script>
+        <script src="headtracking/tfjs-converter.js"></script>
+
+        <!-- You must explicitly require a TF.js backend if you're not using the TF.js union bundle. -->
+        <script src="headtracking/tfjs-backend-webgl.js"></script>
+        <!-- <script src="headtracking/three.min.js"></script> -->
+        <!-- <script src="headtracking/three125.js"></script> -->
+<!--         <script type="module">
+
+          // Find the latest version by visiting https://cdn.skypack.dev/three.
+
+          import * as THREE from 'https://cdn.skypack.dev/three@0.137.5';
+
+          const scene = new THREE.Scene();
+
+        </script> -->
+        <script src="headtracking/Stats.min.js"></script>
+        <!-- Load scatter-gl.js -->
+        <!-- <script src="headtracking/scatter-gl.js"></script> -->
+
+         <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+        <script src="node_modules/@tensorflow-models/pose-detection/dist/pose-detection.js"></script>
+        <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@0.0.6"></script> -->
+        <!-- Alternatively you can use the WASM backend: <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script> -->
+
+
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "./node_modules/three/build/three.module.js",
+                    "pose": "https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"
+
+                }
+            }
+        </script>
+        <!-- <script src="https://cdn.jsdelivr.net/npm/scatter-gl@0.0.12/lib/scatter-gl.js"></script> -->
+
+<!--                             "@tensorflow/tfjs-core": "./node_modules/@tensorflow/tfjs-core/dist/tf-core.fesm.js",
+                    "@mediapipe/pose": "./node_modules/@mediapipe/pose/pose.js",
+                    "posedetection": "./node_modules/@tensorflow-models/pose-detection/dist/pose-detection.esm.js" -->
+
+        <!-- <script src="headtracking/pose-detection.js"></script> -->
+        <!-- <script src="headtracking/params.js" type="module"></script> -->
+        <!-- <script src="headtracking/stats_panel.js" type="module"></script> -->
+        <!-- <script src="headtracking/camera.js" type="module"></script> -->
+    </head>
+    <body>
+    <div id="stats"></div>
+    <div id="position">
+        <div id="posx">Raw x: <pre></pre></div>
+        <div id="posy">Raw y: <pre></pre></div>
+        <div id="posz">Raw z: <pre></pre></div>
+        <div id="calcz">Est z: <pre></pre></div>
+    </div>
+    <div id="position3d">
+        <div id="posx3d">3D x: <pre></pre></div>
+        <div id="posy3d">3D y: <pre></pre></div>
+        <div id="posz3d">3D z: <pre></pre></div>
+        <div id="calcz3d">Est z: <pre></pre></div>
+    </div>
+    </div>
+
+    <div id="main">
+        <div class="container">
+          <div class="canvas-wrapper">
+            <canvas id="output"></canvas>
+            <video id="video" playsinline style="
+              -webkit-transform: scaleX(-1);
+              transform: scaleX(-1);
+              visibility: hidden;
+              width: auto;
+              height: auto;
+              ">
+            </video>
+          </div>
+          <!-- <div id="scatter-gl-container"></div> -->
+        </div>
+    </div>
+<script src="headtracking/headtracking.js" type="module"></script>
+    </body>
+</html>
