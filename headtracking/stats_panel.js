@@ -35,8 +35,8 @@ export function setupStats() {
   const statsPanes = parent.querySelectorAll('canvas');
 
   for (let i = 0; i < statsPanes.length; ++i) {
-    statsPanes[i].style.width = '140px';
-    statsPanes[i].style.height = '80px';
+    // statsPanes[i].style.width = '140px';
+    // statsPanes[i].style.height = '80px';
   }
   return stats;
 }

@@ -79,6 +79,8 @@ function getCoordsFromKeypoint(kp) {
   return [avgx, avgy, avgz, calcz];
 }
 
+window.headPosition = {x: 0.0, y:0.0, z:0.0};
+
 function rendercoords (kp, kp3d) {
     let [avgx, avgy, avgz, calcz] = getCoordsFromKeypoint(kp);
     posXEl.innerText = avgx.toFixed(4);
@@ -92,6 +94,10 @@ function rendercoords (kp, kp3d) {
 
 
     [avgx, avgy, avgz, calcz] = getCoordsFromKeypoint(kp3d);
+    window.headPosition.x = avgx;
+    window.headPosition.y = avgy += 3;
+    window.headPosition.z = avgz += 3;
+
     posX3dEl.innerText = avgx.toFixed(4);
     posY3dEl.innerText = avgy.toFixed(4);
     posZ3dEl.innerText = avgz.toFixed(4);

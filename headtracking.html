@@ -7,6 +7,8 @@
         <style>
             body {
                 color: #444;
+                display: flex;
+                flex-flow: row wrap;
             }
             a {
                 color: #08f;
@@ -17,8 +19,12 @@
                 position:  absolute;
             }
 
+            #stats {
+                /*position: absolute;*/
+            }
+
             #position {
-                display: flex;
+                /*display: flex;*/
             }
 
             #position div {
@@ -28,7 +34,7 @@
             }
 
              #position3d {
-                display: flex;
+                /*display: flex;*/
             }
 
             #position3d div {
@@ -56,25 +62,13 @@
 
         <!-- You must explicitly require a TF.js backend if you're not using the TF.js union bundle. -->
         <script src="headtracking/tfjs-backend-webgl.js"></script>
-        <!-- <script src="headtracking/three.min.js"></script> -->
-        <!-- <script src="headtracking/three125.js"></script> -->
-<!--         <script type="module">
 
-          // Find the latest version by visiting https://cdn.skypack.dev/three.
-
-          import * as THREE from 'https://cdn.skypack.dev/three@0.137.5';
-
-          const scene = new THREE.Scene();
-
-        </script> -->
         <script src="headtracking/Stats.min.js"></script>
-        <!-- Load scatter-gl.js -->
-        <!-- <script src="headtracking/scatter-gl.js"></script> -->
+
 
          <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
         <script src="node_modules/@tensorflow-models/pose-detection/dist/pose-detection.js"></script>
-        <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@0.0.6"></script> -->
-        <!-- Alternatively you can use the WASM backend: <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script> -->
+
 
 
         <script type="importmap">
@@ -86,16 +80,7 @@
                 }
             }
         </script>
-        <!-- <script src="https://cdn.jsdelivr.net/npm/scatter-gl@0.0.12/lib/scatter-gl.js"></script> -->
 
-<!--                             "@tensorflow/tfjs-core": "./node_modules/@tensorflow/tfjs-core/dist/tf-core.fesm.js",
-                    "@mediapipe/pose": "./node_modules/@mediapipe/pose/pose.js",
-                    "posedetection": "./node_modules/@tensorflow-models/pose-detection/dist/pose-detection.esm.js" -->
-
-        <!-- <script src="headtracking/pose-detection.js"></script> -->
-        <!-- <script src="headtracking/params.js" type="module"></script> -->
-        <!-- <script src="headtracking/stats_panel.js" type="module"></script> -->
-        <!-- <script src="headtracking/camera.js" type="module"></script> -->
     </head>
     <body>
     <div id="stats"></div>
@@ -111,6 +96,10 @@
         <div id="posz3d">3D z: <pre></pre></div>
         <div id="calcz3d">Est z: <pre></pre></div>
     </div>
+    <div>
+        <div>world_Cam: <pre id="worldCamPos">foo</pre></div>
+        <div>refplane_Cam: <pre id="refMeshCamPos">bar</pre></div>
+        <div>portal_Cam: <pre id="portalCamPos">bash</pre></div>
     </div>
 
     <div id="main">
@@ -126,9 +115,11 @@
               ">
             </video>
           </div>
-          <!-- <div id="scatter-gl-container"></div> -->
+          
         </div>
     </div>
+    <div id="container"></div>
 <script src="headtracking/headtracking.js" type="module"></script>
+<script type="module" src="perspective.js"></script>
     </body>
 </html>

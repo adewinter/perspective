@@ -18,8 +18,8 @@ let stats;
 
 let colorList = [0x922606, 0x69E216, 0xEC2EA3, 0x60DCDA, 0xD76A9A, 0x1521DA, 0xDC3146, 0xB69C83, 0x1E670A, 0xE2CC37];
 
-const portalWidth = 40;
-const portalHeight = 60;
+const portalWidth = 4.0;
+const portalHeight = 6.0;
 
 let worldCamPosEl, portalCamPosEl, refMeshCamPosEl;
 
@@ -27,15 +27,23 @@ let portalMesh, portalTexture, refMesh;
 
 let refMeshTL, refMeshBL, refMeshBR
 
+const rendererWidth = 640;
+const rendererHeight = 480;
 
-init();
-animate();
+const sceneWindowWidth = 0.29; //dimensions of our 'window into the world'
+const sceneWindowHeight = 0.19;
+
+// we will treat 1 ThreeJS/WebGL unit as 1 meter when working with x/y/z etc
+let flagLookOnce = true;
+
+
+
 
 function initRendererAndScene() {
     const container = document.getElementById( 'container' );
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize( rendererWidth, rendererHeight );
     container.appendChild( renderer.domElement );
     renderer.localClippingEnabled = true;
     scene = new THREE.Scene();
@@ -43,6 +51,7 @@ function initRendererAndScene() {
 
 function createStats() {
     stats = new Stats();
+    stats.dom.style.position = "relative";
     document.body.appendChild( stats.dom );
 }
 
@@ -63,18 +72,41 @@ function setupMainCameraControls() {
 
 
     cameraControls = new FlyControls( mainCamera, renderer.domElement );
-    cameraControls.movementSpeed = 50;
+    cameraControls.movementSpeed = 25;
     cameraControls.domElement = renderer.domElement;
     cameraControls.rollSpeed = Math.PI / 2;
     cameraControls.autoForward = false;
     cameraControls.dragToLook = true;
 }
 
-function createCameras() {
-    mainCamera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 5000 );
-    mainCamera.position.set( 0, 75, 160 );
-
+function createCameras(target) {
+    mainCamera = new THREE.PerspectiveCamera( 45, rendererWidth / rendererHeight, 1, 100 );
     portalCamera = new THREE.PerspectiveCamera( 45, portalWidth/portalHeight, 0.1, 500.0 );
+
+    mainCamera.position.set( 0, 14.5, 16.0 );
+    mainCamera.lookAt(new THREE.Vector3(0,0,-8));
+
+    scene.add(mainCamera);
+    
+    portalCamera.position.set( 0, 15, 16.0 );
+    portalCamera.lookAt(refMesh.position);
+    
+    // find refMesh corners;
+    // refMeshBL.set(-sceneWindowWidth/2, -sceneWindowHeight/2, 0);
+    // refMesh.localToWorld(refMeshBL);
+
+    // refMeshBR.set(sceneWindowWidth/2, -sceneWindowHeight/2, 0);
+    // refMesh.localToWorld(refMeshBR);
+
+    // refMeshTL.set(-sceneWindowWidth/2, sceneWindowHeight/2, 0);
+    // refMesh.localToWorld(refMeshTL);
+
+    // // render the portal effect
+    // CameraUtils.frameCorners(portalCamera, refMeshBL, refMeshBR, refMeshTL, false);
+
+
+
+
     scene.add( portalCamera );
     portalCameraHelper = new THREE.CameraHelper( portalCamera );
     scene.add( portalCameraHelper );
@@ -85,11 +117,13 @@ function createRoom() {
     function getColor() {
         return colorList[Math.floor(Math.random()*colorList.length)];
     }
+    const planeWidth = 10;
+    const planeHeight = 10;
     const roomGroup = new THREE.Group();
-    const planeGeo = new THREE.PlaneGeometry( 100.1, 100.1 );
+    const planeGeo = new THREE.PlaneGeometry( planeWidth, planeHeight );
     // walls
     const planeTop = new THREE.Mesh( planeGeo, new THREE.MeshPhongMaterial( { color: getColor() } ) );
-    planeTop.position.y = 100;
+    planeTop.position.y = planeHeight;
     planeTop.rotateX( Math.PI / 2 );
     roomGroup.add( planeTop );
 
@@ -98,45 +132,45 @@ function createRoom() {
     roomGroup.add( planeBottom );
 
     const planeFront = new THREE.Mesh( planeGeo, new THREE.MeshPhongMaterial( { color: getColor() } ) );
-    planeFront.position.z = 50;
-    planeFront.position.y = 50;
+    planeFront.position.z = planeHeight/2;
+    planeFront.position.y = planeWidth/2;
     planeFront.rotateY( Math.PI );
     roomGroup.add( planeFront );
 
     const planeBack = new THREE.Mesh( planeGeo, new THREE.MeshPhongMaterial( { color: getColor() } ) );
-    planeBack.position.z = - 50;
-    planeBack.position.y = 50;
+    planeBack.position.z = planeHeight/-2;
+    planeBack.position.y = planeWidth/2;
     roomGroup.add( planeBack );
 
     const planeRight = new THREE.Mesh( planeGeo, new THREE.MeshPhongMaterial( { color: getColor() } ) );
-    planeRight.position.x = 50;
-    planeRight.position.y = 50;
+    planeRight.position.x = planeWidth/2;
+    planeRight.position.y = planeWidth/2;
     planeRight.rotateY( - Math.PI / 2 );
     roomGroup.add( planeRight );
 
     const planeLeft = new THREE.Mesh( planeGeo, new THREE.MeshPhongMaterial( { color: getColor() } ) );
-    planeLeft.position.x = - 50;
-    planeLeft.position.y = 50;
+    planeLeft.position.x = planeWidth/-2;
+    planeLeft.position.y = planeWidth/2;
     planeLeft.rotateY( Math.PI / 2 );
     roomGroup.add( planeLeft );
 
 
 
     // lights
-    const mainLight = new THREE.PointLight( 0xcccccc, 1.5, 250 );
-    mainLight.position.y = 60;
+    const mainLight = new THREE.PointLight( 0xcccccc, 1.5, 80.0 );
+    mainLight.position.y = 6;
     roomGroup.add( mainLight );
 
-    const greenLight = new THREE.PointLight( 0x00ff00, 0.25, 1000 );
-    greenLight.position.set( 550, 50, 0 );
+    const greenLight = new THREE.PointLight( 0x00ff00, 0.25, 200.0 );
+    greenLight.position.set( 55, 5, 0 );
     roomGroup.add( greenLight );
 
-    const redLight = new THREE.PointLight( 0xff0000, 0.25, 1000 );
-    redLight.position.set( - 550, 50, 0 );
+    const redLight = new THREE.PointLight( 0xff0000, 0.25, 100.0 );
+    redLight.position.set( - 55, 5, 0 );
     roomGroup.add( redLight );
 
-    const blueLight = new THREE.PointLight( 0x7f7fff, 0.25, 1000 );
-    blueLight.position.set( 0, 50, 550 );
+    const blueLight = new THREE.PointLight( 0x7f7fff, 0.25, 100.0 );
+    blueLight.position.set( 0, 5, 55 );
     roomGroup.add( blueLight );
 
     // scene.add(roomGroup);
@@ -146,13 +180,14 @@ function createRoom() {
 function createOrnament() {
     const ornamentGroup = new THREE.Group();
 
-    const boxGeo = new THREE.BoxGeometry(10.0, 10.0, 10);
+    const boxGeo = new THREE.BoxGeometry(1.0, 1.0, 1);
     const boxMat = new THREE.MeshPhongMaterial( { color: 0x00ff00 } );
     const box = new THREE.Mesh( boxGeo, boxMat );
-    box.position.y = 5;
+    box.castShadow = true;
+    box.position.y = 0.5;
     ornamentGroup.add(box);
 
-    const torusGeo = new THREE.TorusKnotGeometry( 4, 0.8, 95, 20 );
+    const torusGeo = new THREE.TorusKnotGeometry( 0.4, 0.08, 95, 20 );
     const torusMat = new THREE.MeshPhongMaterial( {
         color: 0x80ee10,
         shininess: 100,
@@ -161,32 +196,31 @@ function createOrnament() {
 
     const torus = new THREE.Mesh( torusGeo, torusMat );
     torus.castShadow = true;
-    torus.position.y = 20;
+    torus.position.y = 1.7;
     ornamentGroup.add(torus);
 
     return ornamentGroup;
 }
 
-function createrefMesh() {
+function createWorldWindow() {
     refMeshBL = new THREE.Vector3();
     refMeshBR = new THREE.Vector3();
     refMeshTL = new THREE.Vector3();
-    const planeGeo = new THREE.PlaneGeometry( portalWidth, portalHeight );
+    const planeGeo = new THREE.PlaneGeometry( sceneWindowWidth, sceneWindowHeight );
     const planeMat = new THREE.MeshBasicMaterial({opacity: 0.0, wireframe: true});
     const planeMesh = new THREE.Mesh(planeGeo, planeMat);
-    planeMesh.position.y = 30;
     return planeMesh;
 }
 
 function createportalMesh() {
-    const portalGeo = new THREE.PlaneGeometry( portalWidth, portalHeight );
+    const portalGeo = new THREE.PlaneGeometry( sceneWindowWidth*20, sceneWindowHeight*20 );
     const portalTextureXResolution = 1024*portalWidth/portalHeight;
     const portalTextureYResolution = 1024;
     portalTexture = new THREE.WebGLRenderTarget(portalTextureXResolution, portalTextureYResolution);
 
     const portal = new THREE.Mesh( portalGeo, new THREE.MeshBasicMaterial( { map: portalTexture.texture } ) );
 
-    portal.position.y = 30;
+    portal.position.y = 3;
 
     return portal
 }
@@ -195,26 +229,36 @@ function vecToString(vec) {
     return 'x:' + vec.x.toFixed() + ',\ty:' + vec.y.toFixed() + ',\tz:' + vec.z.toFixed();
 }
 
+
+
 function createScene() {
-    const room1 = createRoom();
-        portalMesh = createportalMesh();
-        portalMesh.position.z = -30;
-        room1.add(portalMesh);
-    scene.add(room1);
+
+
+
+    refMesh = createWorldWindow();
+    refMesh.position.set (0, 14.5, 15.5);
+    scene.add(refMesh);
     
-    const room2 = createRoom();
+    const room1 = createRoom();
+        // portalMesh.position.z = -3;
+        // room1.add(portalMesh);
         const ornament = createOrnament();
-        ornament.position.z = -20;
-        room2.add(ornament);
+        ornament.position.z = -0.2;
+        room1.add(ornament);
         const otherOrn = createOrnament();
-        otherOrn.position.z = 45;
-        otherOrn.position.x = 10;
-        room2.add(otherOrn);
-        refMesh = createrefMesh();
-        refMesh.position.z = 35;
-        room2.add(refMesh);
-    room2.position.x = 150;
+        otherOrn.position.z = 4.5;
+        otherOrn.position.x = 1.0;
+        room1.add(otherOrn);
+    scene.add(room1);
+
+
+    const room2 = createRoom();
+        room2.position.x = -15;
+        portalMesh = createportalMesh();
+        room2.add(portalMesh);
     scene.add(room2);
+
+    return room1;
 }
 
 function initDomEls() {
@@ -230,9 +274,11 @@ function init() {
     createStats();
     createGUI();
 
-    createCameras();
+    let target = createScene();
+    createCameras(target);
     setupMainCameraControls();
-    createScene();
+    window.portalCamera = portalCamera;
+    window.refMesh = refMesh;
     
 }
 
@@ -267,13 +313,13 @@ function renderPortal() {
     renderer.shadowMap.autoUpdate = false; // Avoid re-computing shadows
 
     // find refMesh corners;
-    refMeshBL.set(-portalWidth/2, -portalHeight/2, 0);
+    refMeshBL.set(-sceneWindowWidth/2, -sceneWindowHeight/2, 0);
     refMesh.localToWorld(refMeshBL);
 
-    refMeshBR.set(portalWidth/2, -portalHeight/2, 0);
+    refMeshBR.set(sceneWindowWidth/2, -sceneWindowHeight/2, 0);
     refMesh.localToWorld(refMeshBR);
 
-    refMeshTL.set(-portalWidth/2, portalHeight/2, 0);
+    refMeshTL.set(-sceneWindowWidth/2, sceneWindowHeight/2, 0);
     refMesh.localToWorld(refMeshTL);
 
     // render the portal effect
@@ -294,11 +340,35 @@ function renderPortal() {
     renderer.setRenderTarget( currentRenderTarget );
 }
 
+// window.foo = new THREE.Vector3(0.1, -0.3, -0.5);
+window.headPosition = { x: 0.009244461543858051, y: -0.6128315925598145, z: -0.28158923983573914 };
+window.headPosition.y += 1;
+window.headPosition.z += 1;
+function getHeadCoordsAndMoveCamera() {
+    let hp = window.headPosition;
+    let headPosition = new THREE.Vector3(hp.x, hp.y, hp.z);
+    refMesh.localToWorld(headPosition);
+
+    // console.log(test);
+    portalCamera.position.copy(headPosition);
+
+
+}
+
 function animate() {
     requestAnimationFrame(animate);
     updateControls();
-    movePortalCameraRelativeToMainCamera();
+    // movePortalCameraRelativeToMainCamera();
+    getHeadCoordsAndMoveCamera();
     renderPortal()
     renderer.render(scene, mainCamera);
     stats.update();
+
+    if(flagLookOnce) {
+        flagLookOnce = false;
+        portalCamera.lookAt(refMesh.position);
+    }
 }
+
+init();
+animate();
