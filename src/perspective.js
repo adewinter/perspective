@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 
-import * as CameraUtils from './node_modules/three/examples/jsm/utils/CameraUtils.js';
-import { OrbitControls } from './node_modules/three/examples/jsm/controls/OrbitControls.js';
-import { FlyControls } from './node_modules/three/examples/jsm/controls/FlyControls.js';
+import * as CameraUtils from 'three/examples/jsm/utils/CameraUtils.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { FlyControls } from 'three/examples/jsm/controls/FlyControls.js';
 
 
-import Stats from './node_modules/three/examples/jsm/libs/stats.module.js';
-import { GUI } from './node_modules/three/examples/jsm/libs/lil-gui.module.min.js';
+import Stats from 'stats.js';
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
 let mainCamera, portalCamera, portalCameraHelper, scene, renderer;
 
