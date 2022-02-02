@@ -1,4 +1,5 @@
-// import * as posedetection from 'posedetection';
+import * as poseDetection from '@tensorflow-models/pose-detection';
+import * as tf from '@tensorflow/tfjs-core';
 
 console.log("in params.js", poseDetection);
 
@@ -32,7 +33,7 @@ export const MOVENET_CONFIG = {
 
 export const STATE = {
   camera: {targetFPS: 60, sizeOption: '360 X 270'},
-  backend: 'tfjs-webgl',
+  backend: 'mediapipe-gpu',
   flags: {},
   // modelConfig: MOVENET_CONFIG,
   // model: poseDetection.SupportedModels.MoveNet,

@@ -1,3 +1,6 @@
+import '@tensorflow/tfjs-backend-webgl';
+import * as poseDetection from '@tensorflow-models/pose-detection';
+
 import {Camera} from './camera.js';
 import {STATE, setBackendAndEnvFlags} from './params.js';
 import {setupStats} from "./stats_panel.js"
@@ -24,15 +27,12 @@ let posX3dEl, posY3dEl, posZ3dEl, calcZ3dEl;
 // }
 
 async function createDetector() {
-
-    // let detectorConfig = {modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING};
-    // detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, detectorConfig);
     let detectorConfig = {
       runtime: 'mediapipe',
       enableSmoothing: true,
       modelType: 'full',
-      solutionPath: 'node_modules/@mediapipe/pose',
-      // solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/pose',
+      // solutionPath: 'node_modules/@mediapipe/pose',
+      solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/pose',
       // detectorModelUrl: '/headtracking/blazepose-detector-model.json',
       // detectorModelUrl: '/headtracking/model.json',
       // landmarkModelUrl: '/headtracking/blazepose-landmark-model.json'
@@ -191,7 +191,7 @@ function initMisc() {
   calcZ3dEl = document.querySelector('#calcz3d pre');
 }
 
-async function app() {
+export default async function app() {
   // Gui content will change depending on which model is in the query string.
   // const urlParams = new URLSearchParams(window.location.search);
   // if (!urlParams.has('model')) {
@@ -214,4 +214,4 @@ async function app() {
   renderPrediction();
 };
 
-app();
+// app();

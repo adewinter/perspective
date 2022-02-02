@@ -8,6 +8,8 @@ import { FlyControls } from 'three/examples/jsm/controls/FlyControls.js';
 import Stats from 'stats.js';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
+import HeadtrackingApp from './headtracking/headtracking.js';
+
 let mainCamera, portalCamera, portalCameraHelper, scene, renderer;
 
 let cameraControls;
@@ -293,6 +295,8 @@ function init() {
     window.portalCamera = portalCamera;
     window.refMesh = refMesh;
     createGUI();
+
+    HeadtrackingApp();
     
 }
 

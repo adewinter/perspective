@@ -14,7 +14,7 @@
  * limitations under the License.
  * =============================================================================
  */
-// import * as poseDetection from '@tensorflow-models/pose-detection';
+import * as poseDetection from '@tensorflow-models/pose-detection';
 // import * as scatter from 'scatter-gl';
 
 import * as params from './params.js';
