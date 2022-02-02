@@ -6,7 +6,9 @@
   "dependencies": {
     "@mediapipe/pose": "^0.5.1635988162",
     "@tensorflow-models/pose-detection": "^1.0.1",
-    "three": "^0.136.0"
+    "three": "^0.136.0",
+    "webpack": "^5.68.0",
+    "webpack-cli": "^4.9.2"
   },
   "devDependencies": {},
   "scripts": {

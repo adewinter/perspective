@@ -30,13 +30,20 @@ let refMeshTL, refMeshBL, refMeshBR
 const rendererWidth = 640;
 const rendererHeight = 480;
 
-const sceneWindowWidth = 0.29; //dimensions of our 'window into the world'
-const sceneWindowHeight = 0.19;
+const sceneWindowWidthInitial = 0.29;
+const sceneWindowHeightInitial = 0.19;
+
+const sceneWindow = { //dimensions of our 'window into the world'
+    width: sceneWindowWidthInitial,
+    height: sceneWindowHeightInitial
+};
 
 // we will treat 1 ThreeJS/WebGL unit as 1 meter when working with x/y/z etc
 let flagLookOnce = true;
 
+let gui;
 
+let portalCamOffset = {x:0, y:0, z:0};
 
 
 function initRendererAndScene() {
@@ -60,7 +67,17 @@ function createClocks() {
 }
 
 function createGUI() {
+    gui = new GUI();
+    const perspFolder = gui.addFolder('Perspective Camera');
+    perspFolder.add(portalCamOffset, 'x', -3.1, 3);
+    perspFolder.add(portalCamOffset, 'y', -3.1, 3);
+    perspFolder.add(portalCamOffset, 'z', -3.1, 3);
+    perspFolder.open();
 
+    const sceneWindowFolder = gui.addFolder('Scene Window Dimensions');
+    sceneWindowFolder.add(sceneWindow, 'width', 0, 3.1);
+    sceneWindowFolder.add(sceneWindow, 'height', 0, 3.1);
+    sceneWindowFolder.open();
 }
 
 function setupMainCameraControls() {
@@ -77,28 +94,28 @@ function setupMainCameraControls() {
     cameraControls.rollSpeed = Math.PI / 2;
     cameraControls.autoForward = false;
     cameraControls.dragToLook = true;
+
 }
 
 function createCameras(target) {
     mainCamera = new THREE.PerspectiveCamera( 45, rendererWidth / rendererHeight, 1, 100 );
-    portalCamera = new THREE.PerspectiveCamera( 45, portalWidth/portalHeight, 0.1, 500.0 );
+    portalCamera = new THREE.PerspectiveCamera( 45, sceneWindowWidthInitial/sceneWindowHeightInitial, 0.1, 500.0 );
 
     mainCamera.position.set( 0, 14.5, 16.0 );
     mainCamera.lookAt(new THREE.Vector3(0,0,-8));
 
     scene.add(mainCamera);
     
-    portalCamera.position.set( 0, 15, 16.0 );
-    portalCamera.lookAt(refMesh.position);
+
     
     // find refMesh corners;
-    // refMeshBL.set(-sceneWindowWidth/2, -sceneWindowHeight/2, 0);
+    // refMeshBL.set(-sceneWindow.width/2, -sceneWindow.height/2, 0);
     // refMesh.localToWorld(refMeshBL);
 
-    // refMeshBR.set(sceneWindowWidth/2, -sceneWindowHeight/2, 0);
+    // refMeshBR.set(sceneWindow.width/2, -sceneWindow.height/2, 0);
     // refMesh.localToWorld(refMeshBR);
 
-    // refMeshTL.set(-sceneWindowWidth/2, sceneWindowHeight/2, 0);
+    // refMeshTL.set(-sceneWindow.width/2, sceneWindow.height/2, 0);
     // refMesh.localToWorld(refMeshTL);
 
     // // render the portal effect
@@ -206,14 +223,14 @@ function createWorldWindow() {
     refMeshBL = new THREE.Vector3();
     refMeshBR = new THREE.Vector3();
     refMeshTL = new THREE.Vector3();
-    const planeGeo = new THREE.PlaneGeometry( sceneWindowWidth, sceneWindowHeight );
+    const planeGeo = new THREE.PlaneGeometry( sceneWindow.width, sceneWindow.height );
     const planeMat = new THREE.MeshBasicMaterial({opacity: 0.0, wireframe: true});
     const planeMesh = new THREE.Mesh(planeGeo, planeMat);
     return planeMesh;
 }
 
 function createportalMesh() {
-    const portalGeo = new THREE.PlaneGeometry( sceneWindowWidth*20, sceneWindowHeight*20 );
+    const portalGeo = new THREE.PlaneGeometry( sceneWindow.width*20, sceneWindow.height*20 );
     const portalTextureXResolution = 1024*portalWidth/portalHeight;
     const portalTextureYResolution = 1024;
     portalTexture = new THREE.WebGLRenderTarget(portalTextureXResolution, portalTextureYResolution);
@@ -232,11 +249,8 @@ function vecToString(vec) {
 
 
 function createScene() {
-
-
-
     refMesh = createWorldWindow();
-    refMesh.position.set (0, 14.5, 15.5);
+    refMesh.position.set (0, 1.5, 6.5);
     scene.add(refMesh);
     
     const room1 = createRoom();
@@ -272,36 +286,19 @@ function init() {
     initRendererAndScene();
     createClocks();
     createStats();
-    createGUI();
 
     let target = createScene();
     createCameras(target);
     setupMainCameraControls();
     window.portalCamera = portalCamera;
     window.refMesh = refMesh;
+    createGUI();
     
 }
 
 function updateControls() {
     const delta = clock.getDelta();
     cameraControls.update( delta )
-}
-
-function movePortalCameraRelativeToMainCamera(){
-    let world_MainCameraPosition = mainCamera.position.clone();
-    worldCamPosEl.innerText = vecToString(world_MainCameraPosition);
-
-    let portal_MainCameraPosition = world_MainCameraPosition.clone()
-    portalMesh.worldToLocal(portal_MainCameraPosition);
-    portalCamPosEl.innerText = vecToString(portal_MainCameraPosition)
-
-    //converts portalCameraPosition vector from worldSpace to refMesh local space
-    let world_PortalCameraPosition = portal_MainCameraPosition.clone()
-    refMesh.localToWorld(world_PortalCameraPosition);
-    refMeshCamPosEl.innerText = vecToString(world_PortalCameraPosition);
-
-    //sets portalCamera position to that of refMesh.position
-    portalCamera.position.copy(world_PortalCameraPosition)
 }
 
 function renderPortal() {
@@ -313,13 +310,13 @@ function renderPortal() {
     renderer.shadowMap.autoUpdate = false; // Avoid re-computing shadows
 
     // find refMesh corners;
-    refMeshBL.set(-sceneWindowWidth/2, -sceneWindowHeight/2, 0);
+    refMeshBL.set(-sceneWindow.width/2, -sceneWindow.height/2, 0);
     refMesh.localToWorld(refMeshBL);
 
-    refMeshBR.set(sceneWindowWidth/2, -sceneWindowHeight/2, 0);
+    refMeshBR.set(sceneWindow.width/2, -sceneWindow.height/2, 0);
     refMesh.localToWorld(refMeshBR);
 
-    refMeshTL.set(-sceneWindowWidth/2, sceneWindowHeight/2, 0);
+    refMeshTL.set(-sceneWindow.width/2, sceneWindow.height/2, 0);
     refMesh.localToWorld(refMeshTL);
 
     // render the portal effect
@@ -345,21 +342,36 @@ window.headPosition = { x: 0.009244461543858051, y: -0.6128315925598145, z: -0.2
 window.headPosition.y += 1;
 window.headPosition.z += 1;
 function getHeadCoordsAndMoveCamera() {
+
+    //reset portalCamera position
+    let offset = new THREE.Vector3(0, 0, 1);
+    refMesh.localToWorld(offset);
+    portalCamera.position.copy(offset);
+
+    
+    //Debug device so we can use the GUI to shift the portal cam around a bit
+    portalCamera.position.x += portalCamOffset.x;
+    portalCamera.position.y += portalCamOffset.y;
+    portalCamera.position.z += portalCamOffset.z;
+
     let hp = window.headPosition;
-    let headPosition = new THREE.Vector3(hp.x, hp.y, hp.z);
-    refMesh.localToWorld(headPosition);
+    portalCamera.position.x += hp.x;
+    portalCamera.position.y += hp.y;
+    portalCamera.position.z += hp.z;
+}
 
-    // console.log(test);
-    portalCamera.position.copy(headPosition);
-
-
+function updateRefMeshDimensions() {
+    refMesh.scale.x = sceneWindow.width/sceneWindowWidthInitial;
+    refMesh.scale.y = sceneWindow.height/sceneWindowHeightInitial;
 }
 
 function animate() {
     requestAnimationFrame(animate);
     updateControls();
-    // movePortalCameraRelativeToMainCamera();
+
     getHeadCoordsAndMoveCamera();
+
+    updateRefMeshDimensions();
     renderPortal()
     renderer.render(scene, mainCamera);
     stats.update();
