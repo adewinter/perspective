@@ -1,0 +1,46 @@
+body {
+    color: #444;
+    display: flex;
+    flex-flow: row wrap;
+}
+a {
+    color: #08f;
+}
+
+#info {
+    color: white;
+    position:  absolute;
+}
+
+#stats {
+    /*position: absolute;*/
+}
+
+#position {
+    /*display: flex;*/
+}
+
+#position div {
+    padding: 10px;
+    border: 1px solid black;
+    margin: 5px;
+}
+
+ #position3d {
+    /*display: flex;*/
+}
+
+#position3d div {
+    padding: 10px;
+    border: 1px solid black;
+    margin: 5px;
+}
+
+#main {
+  position: relative;
+  margin: 0;
+}
+#canvas-wrapper,
+#scatter-gl-container {
+  position: relative;
+}
