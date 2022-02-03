@@ -12,6 +12,7 @@ let rafId;
 
 const LEFT_EYE_INDEX = 2;
 const RIGHT_EYE_INDEX = 5;
+const NOSE_INDEX = 0;
 
 let posXEl, posYEl, posZEl, calcZEl;
 let posX3dEl, posY3dEl, posZ3dEl, calcZ3dEl;
@@ -61,17 +62,30 @@ function endEstimatePosesStats() {
   }
 }
 
-function getCoordsFromKeypoint(kp) {
+function getCoordsFromKeypoint(kp, useNose) {
   // For webcam z=-1, the distance of head from camera is ~60cm
   // when z=-2, distance from webcam is ~30cm. (when centered)
   // x and y values given by Keypoint seem to be regular pixel values of where the landmark occurs in the image
   let kp_left = kp[LEFT_EYE_INDEX];
   let kp_right = kp[RIGHT_EYE_INDEX];
+  let kp_nose = kp[NOSE_INDEX];
 
-  let avgz = (kp_left['z'] + kp_right['z'])/2;
-  let avgx = (kp_left['x'] + kp_right['x'])/2;
-  let avgy = (kp_left['y'] + kp_right['y'])/2;
-  let calcz = 0.6/avgz;
+  let avgx;
+  let avgy;
+  let avgz;
+  let calcz;
+
+  if(useNose) {
+    avgx = kp_nose['x'];
+    avgy = kp_nose['y'];
+    avgz = kp_nose['z'];
+    calcz = 0.6/avgz;
+  } else {
+    avgx = (kp_left['x'] + kp_right['x'])/2;
+    avgy = (kp_left['y'] + kp_right['y'])/2;
+    avgz = (kp_left['z'] + kp_right['z'])/2;
+    calcz = 0.6/avgz;
+  }
 
 
 
@@ -82,7 +96,7 @@ function getCoordsFromKeypoint(kp) {
 window.headPosition = {x: 0.0, y:0.0, z:0.0};
 
 function rendercoords (kp, kp3d) {
-    let [avgx, avgy, avgz, calcz] = getCoordsFromKeypoint(kp);
+    let [avgx, avgy, avgz, calcz] = getCoordsFromKeypoint(kp, false);
     posXEl.innerText = avgx.toFixed(4);
     posYEl.innerText = avgy.toFixed(4);
     posZEl.innerText = avgz.toFixed(4);
@@ -93,10 +107,12 @@ function rendercoords (kp, kp3d) {
     stats.zPanel.update(-200/avgz, 370);
 
 
-    [avgx, avgy, avgz, calcz] = getCoordsFromKeypoint(kp3d);
+    [avgx, avgy, avgz, calcz] = getCoordsFromKeypoint(kp3d, true);
     window.headPosition.x = avgx;
-    window.headPosition.y = avgy += 3;
-    window.headPosition.z = avgz += 3;
+    window.headPosition.y = avgy;
+    window.headPosition.z = avgz;
+
+    //165*x = 0.50
 
     posX3dEl.innerText = avgx.toFixed(4);
     posY3dEl.innerText = avgy.toFixed(4);

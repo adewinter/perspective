@@ -20,7 +20,12 @@ a {
     /*display: flex;*/
 }
 
-#position div {
+#debug {
+    display: flex;
+    flex-flow: row wrap;
+    margin-left: 100px;
+}
+.position-debug div {
     padding: 10px;
     border: 1px solid black;
     margin: 5px;
@@ -30,23 +35,15 @@ a {
     /*display: flex;*/
 }
 
-#position3d div {
-    padding: 10px;
-    border: 1px solid black;
-    margin: 5px;
-}
-
 #main {
   position: relative;
   margin: 0;
 }
+
+#container {
+    margin-top: 40px;
+}
 #canvas-wrapper,
 #scatter-gl-container {
   position: relative;
-}
-
-#thing {
-    border: 1px solid black;
-    width: 288px;
-    height:  192px;
 }
