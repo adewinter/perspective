@@ -44,3 +44,9 @@ a {
 #scatter-gl-container {
   position: relative;
 }
+
+#thing {
+    border: 1px solid black;
+    width: 288px;
+    height:  192px;
+}

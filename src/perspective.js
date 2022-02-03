@@ -9,6 +9,7 @@ import Stats from 'stats.js';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
 import HeadtrackingApp from './headtracking/headtracking.js';
+import * as roomGenerator from './room_generate.js';
 
 let mainCamera, portalCamera, portalCameraHelper, scene, renderer;
 
@@ -18,7 +19,6 @@ let clock;
 
 let stats;
 
-let colorList = [0x922606, 0x69E216, 0xEC2EA3, 0x60DCDA, 0xD76A9A, 0x1521DA, 0xDC3146, 0xB69C83, 0x1E670A, 0xE2CC37];
 
 const portalWidth = 4.0;
 const portalHeight = 6.0;
@@ -29,11 +29,11 @@ let portalMesh, portalTexture, refMesh;
 
 let refMeshTL, refMeshBL, refMeshBR
 
-const rendererWidth = 640;
-const rendererHeight = 480;
+const rendererWidth = 1100;
+const rendererHeight = 720;
 
-const sceneWindowWidthInitial = 0.29;
-const sceneWindowHeightInitial = 0.19;
+const sceneWindowWidthInitial = 0.29; //meters
+const sceneWindowHeightInitial = 0.19; //meters
 
 const sceneWindow = { //dimensions of our 'window into the world'
     width: sceneWindowWidthInitial,
@@ -46,6 +46,8 @@ let flagLookOnce = true;
 let gui;
 
 let portalCamOffset = {x:0, y:0, z:0};
+
+let SHOULD_LAUNCH_HEADTRACKING = true;
 
 
 function initRendererAndScene() {
@@ -103,8 +105,8 @@ function createCameras(target) {
     mainCamera = new THREE.PerspectiveCamera( 45, rendererWidth / rendererHeight, 1, 100 );
     portalCamera = new THREE.PerspectiveCamera( 45, sceneWindowWidthInitial/sceneWindowHeightInitial, 0.1, 500.0 );
 
-    mainCamera.position.set( 0, 14.5, 16.0 );
-    mainCamera.lookAt(new THREE.Vector3(0,0,-8));
+    mainCamera.position.set( 0, 0, 1.5 );
+    // mainCamera.lookAt(new THREE.Vector3(0,0,-8));
 
     scene.add(mainCamera);
     
@@ -132,94 +134,6 @@ function createCameras(target) {
 
 }
 
-function createRoom() {
-    function getColor() {
-        return colorList[Math.floor(Math.random()*colorList.length)];
-    }
-    const planeWidth = 10;
-    const planeHeight = 10;
-    const roomGroup = new THREE.Group();
-    const planeGeo = new THREE.PlaneGeometry( planeWidth, planeHeight );
-    // walls
-    const planeTop = new THREE.Mesh( planeGeo, new THREE.MeshPhongMaterial( { color: getColor() } ) );
-    planeTop.position.y = planeHeight;
-    planeTop.rotateX( Math.PI / 2 );
-    roomGroup.add( planeTop );
-
-    const planeBottom = new THREE.Mesh( planeGeo, new THREE.MeshPhongMaterial( { color: getColor() } ) );
-    planeBottom.rotateX( - Math.PI / 2 );
-    roomGroup.add( planeBottom );
-
-    const planeFront = new THREE.Mesh( planeGeo, new THREE.MeshPhongMaterial( { color: getColor() } ) );
-    planeFront.position.z = planeHeight/2;
-    planeFront.position.y = planeWidth/2;
-    planeFront.rotateY( Math.PI );
-    roomGroup.add( planeFront );
-
-    const planeBack = new THREE.Mesh( planeGeo, new THREE.MeshPhongMaterial( { color: getColor() } ) );
-    planeBack.position.z = planeHeight/-2;
-    planeBack.position.y = planeWidth/2;
-    roomGroup.add( planeBack );
-
-    const planeRight = new THREE.Mesh( planeGeo, new THREE.MeshPhongMaterial( { color: getColor() } ) );
-    planeRight.position.x = planeWidth/2;
-    planeRight.position.y = planeWidth/2;
-    planeRight.rotateY( - Math.PI / 2 );
-    roomGroup.add( planeRight );
-
-    const planeLeft = new THREE.Mesh( planeGeo, new THREE.MeshPhongMaterial( { color: getColor() } ) );
-    planeLeft.position.x = planeWidth/-2;
-    planeLeft.position.y = planeWidth/2;
-    planeLeft.rotateY( Math.PI / 2 );
-    roomGroup.add( planeLeft );
-
-
-
-    // lights
-    const mainLight = new THREE.PointLight( 0xcccccc, 1.5, 80.0 );
-    mainLight.position.y = 6;
-    roomGroup.add( mainLight );
-
-    const greenLight = new THREE.PointLight( 0x00ff00, 0.25, 200.0 );
-    greenLight.position.set( 55, 5, 0 );
-    roomGroup.add( greenLight );
-
-    const redLight = new THREE.PointLight( 0xff0000, 0.25, 100.0 );
-    redLight.position.set( - 55, 5, 0 );
-    roomGroup.add( redLight );
-
-    const blueLight = new THREE.PointLight( 0x7f7fff, 0.25, 100.0 );
-    blueLight.position.set( 0, 5, 55 );
-    roomGroup.add( blueLight );
-
-    // scene.add(roomGroup);
-    return roomGroup;
-}
-
-function createOrnament() {
-    const ornamentGroup = new THREE.Group();
-
-    const boxGeo = new THREE.BoxGeometry(1.0, 1.0, 1);
-    const boxMat = new THREE.MeshPhongMaterial( { color: 0x00ff00 } );
-    const box = new THREE.Mesh( boxGeo, boxMat );
-    box.castShadow = true;
-    box.position.y = 0.5;
-    ornamentGroup.add(box);
-
-    const torusGeo = new THREE.TorusKnotGeometry( 0.4, 0.08, 95, 20 );
-    const torusMat = new THREE.MeshPhongMaterial( {
-        color: 0x80ee10,
-        shininess: 100,
-        side: THREE.DoubleSide
-    });
-
-    const torus = new THREE.Mesh( torusGeo, torusMat );
-    torus.castShadow = true;
-    torus.position.y = 1.7;
-    ornamentGroup.add(torus);
-
-    return ornamentGroup;
-}
 
 function createWorldWindow() {
     refMeshBL = new THREE.Vector3();
@@ -255,20 +169,12 @@ function createScene() {
     refMesh.position.set (0, 1.5, 6.5);
     scene.add(refMesh);
     
-    const room1 = createRoom();
-        // portalMesh.position.z = -3;
-        // room1.add(portalMesh);
-        const ornament = createOrnament();
-        ornament.position.z = -0.2;
-        room1.add(ornament);
-        const otherOrn = createOrnament();
-        otherOrn.position.z = 4.5;
-        otherOrn.position.x = 1.0;
-        room1.add(otherOrn);
+    const room1 = roomGenerator.createRoomWithOrnaments(1, 1, 5);
+
     scene.add(room1);
 
 
-    const room2 = createRoom();
+    const room2 = roomGenerator.createRoom(10, 10);
         room2.position.x = -15;
         portalMesh = createportalMesh();
         room2.add(portalMesh);
@@ -281,6 +187,17 @@ function initDomEls() {
     worldCamPosEl = document.querySelector('#worldCamPos');
     portalCamPosEl = document.querySelector('#portalCamPos');
     refMeshCamPosEl = document.querySelector('#refMeshCamPos');
+}
+
+
+function check_url_params() {
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const params = Object.fromEntries(urlSearchParams.entries());
+
+    if(params.skipheadtrack) {
+        console.log("SKIPPING LAUNCH OF HEADTRACKING!");
+        SHOULD_LAUNCH_HEADTRACKING = false
+    }
 }
 
 function init() {
@@ -296,7 +213,10 @@ function init() {
     window.refMesh = refMesh;
     createGUI();
 
-    HeadtrackingApp();
+    check_url_params();
+    if(SHOULD_LAUNCH_HEADTRACKING) {
+        HeadtrackingApp();
+    }
     
 }
 
