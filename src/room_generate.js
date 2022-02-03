@@ -1,10 +1,13 @@
 import * as THREE from 'three';
 const colorList = [0x922606, 0x69E216, 0xEC2EA3, 0x60DCDA, 0xD76A9A, 0x1521DA, 0xDC3146, 0xB69C83, 0x1E670A, 0xE2CC37];
 
+const ENABLE_LIGHT_HELPERS = false;
+
+function getColor() {
+    return colorList[Math.floor(Math.random()*colorList.length)];
+}
+
 export function createRoom(wallWidth, wallHeight) {
-    function getColor() {
-        return colorList[Math.floor(Math.random()*colorList.length)];
-    }
 
     const roomGroup = new THREE.Group();
     const planeGeo = new THREE.PlaneGeometry( wallWidth, wallHeight );
@@ -44,21 +47,30 @@ export function createRoom(wallWidth, wallHeight) {
 
 
     // lights
-    const mainLight = new THREE.PointLight( 0xcccccc, 1.5, 80.0 );
-    mainLight.position.y = 6;
+    const mainLight = new THREE.PointLight( 0xcccccc, wallHeight, 10.0 );
+    mainLight.position.set( wallWidth/2-(wallWidth/10), wallHeight/2-(wallHeight/10), wallHeight/2-(wallHeight/10));
     roomGroup.add( mainLight );
 
-    const greenLight = new THREE.PointLight( 0x00ff00, 0.25, 200.0 );
-    greenLight.position.set( 55, 5, 0 );
-    roomGroup.add( greenLight );
+    const sphereSize = wallHeight/10;
 
-    const redLight = new THREE.PointLight( 0xff0000, 0.25, 100.0 );
-    redLight.position.set( - 55, 5, 0 );
-    roomGroup.add( redLight );
 
-    const blueLight = new THREE.PointLight( 0x7f7fff, 0.25, 100.0 );
-    blueLight.position.set( 0, 5, 55 );
-    roomGroup.add( blueLight );
+    const otherWhiteLight = new THREE.PointLight( 0xcccccc, wallHeight, 5.0 );
+    otherWhiteLight.position.set( wallWidth/2-(wallWidth/10), wallHeight/2, -wallHeight/2+(wallHeight/10));
+    roomGroup.add( otherWhiteLight );
+
+    if(ENABLE_LIGHT_HELPERS) {
+        const pointLightHelper = new THREE.PointLightHelper( mainLight, sphereSize );
+        roomGroup.add(pointLightHelper);
+        const pointLightHelper2 = new THREE.PointLightHelper( otherWhiteLight, sphereSize );
+        roomGroup.add(pointLightHelper2);
+    }
+    // const redLight = new THREE.PointLight( 0xff0000, 0.25, 10.0 );
+    // redLight.position.set( -wallWidth+(wallWidth/10), wallHeight/2, 0 );
+    // roomGroup.add( redLight );
+
+    // const blueLight = new THREE.PointLight( 0x7f7fff, 0.25, 10.0 );
+    // blueLight.position.set( wallWidth-(wallWidth/10), -wallHeight/2, 0 );
+    // roomGroup.add( blueLight );
 
     // scene.add(roomGroup);
     return roomGroup;
@@ -69,14 +81,21 @@ function getRandomInt(max) {
 }
 
 function getRandomPosition(positionsAlreadySeen, incrementSize, maxSize) {
+    const numIncrements = maxSize/incrementSize;
     if(positionsAlreadySeen.indexOf(-1) === -1) {
         positionsAlreadySeen.push(-1);
     }
 
     let randomPosition = -1;
+    const max_count = 50;
+    let count = 0;
     while(positionsAlreadySeen.indexOf(randomPosition) !== -1) {
-        randomPosition = getRandomInt(maxSize) * incrementSize;
-        ;
+        randomPosition = getRandomInt(numIncrements) * incrementSize;
+        
+        count += 1;
+        if(count >= max_count) {
+            break;
+        }
     }
 
     return randomPosition
@@ -84,22 +103,34 @@ function getRandomPosition(positionsAlreadySeen, incrementSize, maxSize) {
 
 export function createRoomWithOrnaments(wallWidth, wallHeight, numberOfOrnaments) {
     const room = createRoom(wallWidth, wallHeight);
+
+    // CREATE A FUCKING BOX AT ROOM ORIGIN
+    const boxGeo = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+    const boxMat = new THREE.MeshPhongMaterial( { color: 0xff0000 } );
+    const box = new THREE.Mesh( boxGeo, boxMat );
+
+    room.add(box);
+
+    // room.position.x = wallWidth/2;
+    // room.position.y = wallHeight/2;
+    // room.position.z = wallHeight/2;
+
     const ornamentSize = (wallWidth/numberOfOrnaments).toFixed(5);
 
     let xPositionsAlreadySeen = [-1];
-    let yPositionsAlreadySeen = [-1];
+    let zPositionsAlreadySeen = [-1];
 
     for(let i=0; i<numberOfOrnaments; i++) {
         let ornament = createOrnament(ornamentSize);
         let randX = getRandomPosition(xPositionsAlreadySeen, ornamentSize, numberOfOrnaments*ornamentSize);
         xPositionsAlreadySeen.push(randX);
-        let randY = getRandomPosition(yPositionsAlreadySeen, ornamentSize, numberOfOrnaments*ornamentSize);
-        yPositionsAlreadySeen.push(randY);
+        let randZ = getRandomPosition(zPositionsAlreadySeen, ornamentSize, numberOfOrnaments*ornamentSize);
+        zPositionsAlreadySeen.push(randZ);
 
         
 
-        ornament.x = randX;
-        ornament.y = randY;
+        ornament.position.x = randX - wallWidth/2 + ornamentSize/2;
+        ornament.position.z = randZ - wallHeight/2 + ornamentSize/2;
 
         room.add(ornament);
     }
@@ -126,9 +157,9 @@ function createOrnament(ornamentSize) {
     // box.position.y = 0.5;
     ornamentGroup.add(box);
 
-    const torusGeo = new THREE.TorusKnotGeometry( ornamentSize, ornamentSize/8, 95, 20 );
+    const torusGeo = new THREE.TorusKnotGeometry( ornamentSize/3, ornamentSize/18, 95, 20 );
     const torusMat = new THREE.MeshPhongMaterial( {
-        color: 0x80ee10,
+        color: 0x800010,
         shininess: 100,
         side: THREE.DoubleSide
     });
@@ -137,6 +168,8 @@ function createOrnament(ornamentSize) {
     torus.castShadow = true;
     torus.position.y = ornamentSize;
     ornamentGroup.add(torus);
+
+    ornamentGroup.position.y += ornamentSize/2;
 
     return ornamentGroup;
 }
