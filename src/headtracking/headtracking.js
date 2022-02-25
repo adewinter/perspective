@@ -31,7 +31,7 @@ async function createDetector() {
     let detectorConfig = {
       runtime: 'mediapipe',
       enableSmoothing: true,
-      modelType: 'full',
+      modelType: 'heavy',
       // solutionPath: 'node_modules/@mediapipe/pose',
       solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/pose',
       // detectorModelUrl: '/headtracking/blazepose-detector-model.json',

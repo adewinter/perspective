@@ -32,10 +32,10 @@ let portalMesh, portalTexture, refMesh;
 let refMeshTL, refMeshBL, refMeshBR
 
 const rendererWidth = 1100;
-const rendererHeight = 720;
+const rendererHeight = 1100;
 
 const sceneWindowWidthInitial = 1; //meters
-const sceneWindowHeightInitial = 1; //meters
+const sceneWindowHeightInitial = 1*(rendererHeight/rendererWidth); //meters
 
 const sceneWindow = { //dimensions of our 'window into the world'
     width: sceneWindowWidthInitial,
@@ -47,9 +47,12 @@ let flagLookOnce = false;
 
 let gui;
 
-let portalCamOffset = {x:0, y:0.5, z:0, scaleX:1, scaleY:1, scaleZ:1};
+let portalCamOffset = {x:0, y:-0.61, z:0, scaleX:1, scaleY:1, scaleZ:1, lockX: false, lockY: false, lockZ: false};
 
 let SHOULD_LAUNCH_HEADTRACKING = true;
+let USE_PORTAL_CAMERA_HELPER = false;
+let IS_REFMESH_TRANSPARENT = true;
+let USE_MAIN_CAMERA_FOR_VIEW = false;
 
 
 function initRendererAndScene() {
@@ -60,6 +63,7 @@ function initRendererAndScene() {
     container.appendChild( renderer.domElement );
     renderer.localClippingEnabled = true;
     scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2( 0x00eeff, 0.18 );
 }
 
 function createStats() {
@@ -75,6 +79,9 @@ function createClocks() {
 function createGUI() {
     gui = new GUI();
     const perspFolder = gui.addFolder('Perspective Camera');
+    perspFolder.add(portalCamOffset, 'lockX');
+    perspFolder.add(portalCamOffset, 'lockY');
+    perspFolder.add(portalCamOffset, 'lockZ');
     perspFolder.add(portalCamOffset, 'x', -3.1, 3);
     perspFolder.add(portalCamOffset, 'y', -3.1, 3);
     perspFolder.add(portalCamOffset, 'z', -3.1, 3);
@@ -117,8 +124,11 @@ function createCameras(target) {
     scene.add(mainCamera);
 
     scene.add( portalCamera );
-    // portalCameraHelper = new THREE.CameraHelper( portalCamera );
-    // scene.add( portalCameraHelper );
+
+    if(USE_PORTAL_CAMERA_HELPER){
+        portalCameraHelper = new THREE.CameraHelper( portalCamera );
+        scene.add( portalCameraHelper );
+    }
 }
 
 
@@ -127,7 +137,7 @@ function createWorldWindow() {
     refMeshBR = new THREE.Vector3();
     refMeshTL = new THREE.Vector3();
     const planeGeo = new THREE.PlaneGeometry( sceneWindow.width, sceneWindow.height );
-    const planeMat = new THREE.MeshBasicMaterial({opacity: 0.0, transparent: true});
+    const planeMat = new THREE.MeshBasicMaterial({opacity: 0.0, transparent: IS_REFMESH_TRANSPARENT, wireframe: !IS_REFMESH_TRANSPARENT});
     const planeMesh = new THREE.Mesh(planeGeo, planeMat);
     return planeMesh;
 }
@@ -154,11 +164,12 @@ function vecToString(vec) {
 function createScene() {
     refMesh = createWorldWindow();
     // refMesh.position.set(-0.5, 0, 0.5);
-    refMesh.position.z = 0.5;
+    // refMesh.position.z = 0.5;
     scene.add(refMesh);
     
-    const room1 = roomGenerator.createRoomWithOrnaments(1, 1, 5);
+    const room1 = roomGenerator.createRoomWithOrnaments(1, 1, 5, 5);
     room1.position.y -= 0.5
+    // room1.position.z += 0.5
 
     scene.add(room1);
 
@@ -270,9 +281,17 @@ function getHeadCoordsAndMoveCamera() {
     // hp.y *= portalCamOffset.scaleY;
     // hp.z *= portalCamOffset.scaleZ;
 
-    portalCamera.position.x += ((+hp.x.toFixed(2)) * -1 * portalCamOffset.scaleX);
-    portalCamera.position.y += ((+hp.y.toFixed(2)) * -1 * portalCamOffset.scaleY);
-    portalCamera.position.z += ((+hp.z.toFixed(2)) * -1 * portalCamOffset.scaleZ);
+    if(!portalCamOffset.lockX) {
+        portalCamera.position.x += (+(hp.x * -1 * portalCamOffset.scaleX).toFixed(2));
+    }
+
+    if(!portalCamOffset.lockY) {
+        portalCamera.position.y += (+(hp.y * -1 * portalCamOffset.scaleY).toFixed(2));
+    }
+
+    if(!portalCamOffset.lockZ) {
+        portalCamera.position.z += (+(hp.z * -1 * portalCamOffset.scaleZ).toFixed(2));
+    }
     
     //Debug device so we can use the GUI to shift the portal cam around a bit
     portalCamera.position.x += portalCamOffset.x;
@@ -297,7 +316,7 @@ function animate() {
 
     updateRefMeshDimensions();
     renderPortal()
-    renderer.render(scene, portalCamera);
+    renderer.render(scene, USE_MAIN_CAMERA_FOR_VIEW ? mainCamera : portalCamera);
     stats.update();
 
     if(flagLookOnce) {
