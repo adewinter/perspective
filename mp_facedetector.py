@@ -3,6 +3,9 @@ import mediapipe as mp
 import time
 import math
 
+import cvui
+
+
 from collections import deque
 from statistics import mean
 
@@ -65,6 +68,7 @@ def calcPosition(detection, image):
     Define Origin as webcam position. Positive Z is towards viewer. +X is to the right of user-perspective.  +Y is "down".
     """
     bBox = detection.location_data.relative_bounding_box
+    h, w, c = image.shape
     boundBox = (
         int(bBox.xmin * w),
         int(bBox.ymin * h),
@@ -98,144 +102,168 @@ rx = deque([], 3)
 ry = deque([], 3)
 
 
+allSmoothQs = [lx, ly, rx, ry]
+
+
 def smoothEyes(detection, image):
     image_height, image_width, image_num_colors = image.shape
     left_eye_pt = detection.location_data.relative_keypoints[LEFT_EYE_INDEX]
     right_eye_pt = detection.location_data.relative_keypoints[RIGHT_EYE_INDEX]
 
-    rx.append(right_eye_pt.x)
-    ry.append(right_eye_pt.y)
+    def smoothFunc(q):
+        return int(mean(q))
 
-    lx.append(left_eye_pt.x)
-    ly.append(left_eye_pt.y)
+    rx.append(int(right_eye_pt.x * image_width))
+    ry.append(int(right_eye_pt.y * image_height))
 
-    return (mean(lx), mean(ly)), (mean(rx), mean(ry))
+    lx.append(int(left_eye_pt.x * image_width))
+    ly.append(int(left_eye_pt.y * image_height))
+
+    out = [smoothFunc(x) for x in allSmoothQs]
+
+    return (out[0], out[1]), (out[2], out[3])
 
 
 def drawSmoothEyes(image, detection):
     left_eye, right_eye = smoothEyes(detection, image)
     eye_radius = 5  # px
+
+    print("Left", left_eye)
+    print("Right", right_eye)
+    # import pdb; pdb.set_trace()
     cv2.circle(image, left_eye, eye_radius, (255, 255, 255), 1)
     cv2.circle(image, right_eye, eye_radius, (255, 255, 255), 1)
 
 
-mp_facedetector = mp.solutions.face_detection
-mp_drawing = mp.solutions.drawing_utils
-mp_drawing_styles = mp.solutions.drawing_styles
-mp_face_mesh = mp.solutions.face_mesh
+class FaceDetector:
+    def __init__(self):
+        self.mp_facedetector = mp.solutions.face_detection
+        self.mp_drawing = mp.solutions.drawing_utils
+        self.mp_drawing_styles = mp.solutions.drawing_styles
+        self.mp_face_mesh = mp.solutions.face_mesh
 
-cap = cv2.VideoCapture(0, cv2.CAP_ANY)
-cap.set(cv2.CAP_PROP_FPS, 60)
-counter = 0
-fpscounter = 0
-fps = 0
-totalTime = 1
-prev_frame_time = 0
-savedata = []
-drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
-once = True
-with mp_facedetector.FaceDetection(min_detection_confidence=0.7) as face_detection:
-    # with mp_face_mesh.FaceMesh(
-    #     max_num_faces=1,
-    #     refine_landmarks=True,
-    #     min_detection_confidence=0.5,
-    #     min_tracking_confidence=0.5) as face_mesh:
+        self.cap = cv2.VideoCapture(0, cv2.CAP_ANY)
+        self.cap.set(cv2.CAP_PROP_FPS, 60)
+        self.counter = 0
+        self.fpscounter = 0
+        self.fps = 0
+        self.totalTime = 1
+        self.prev_frame_time = 0
+        self.new_frame_time = 0
+        self.savedata = []
+        self.drawing_spec = self.mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
 
-    while cap.isOpened():
+    def run(self):
+        with self.mp_facedetector.FaceDetection(
+            min_detection_confidence=0.7
+        ) as face_detection:
+            # with mp_face_mesh.FaceMesh(
+            #     max_num_faces=1,
+            #     refine_landmarks=True,
+            #     min_detection_confidence=0.5,
+            #     min_tracking_confidence=0.5) as face_mesh:
 
-        success, image = cap.read()
-        if not success:
-            print("Ignoring empty camera frame.")
-            # If loading a video, use 'break' instead of 'continue'.
-            continue
+            while self.cap.isOpened():
 
-        new_frame_time = time.time()
-        counter += 1
-        fpscounter += 1
+                success, image = self.cap.read()
+                if not success:
+                    print("Ignoring empty camera frame.")
+                    # If loading a video, use 'break' instead of 'continue'.
+                    continue
 
-        # # Convert the BGR image to RGB
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                self.new_frame_time = time.time()
+                self.counter += 1
+                self.fpscounter += 1
 
-        # # Process the image and find faces
-        results = face_detection.process(image)
+                # # Convert the BGR image to RGB
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        # # Convert the image color back so it can be displayed
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+                # # Process the image and find faces
+                results = face_detection.process(image)
 
-        if not results.detections:
-            continue
+                # # Convert the image color back so it can be displayed
+                image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
-        for id, detection in enumerate(results.detections):
-            mp_drawing.draw_detection(image, detection)
-            # print(id, detection)
+                if not results.detections:
+                    continue
 
-            bBox = detection.location_data.relative_bounding_box
+                for id, detection in enumerate(results.detections):
+                    self.mp_drawing.draw_detection(image, detection)
+                    # print(id, detection)
 
-            h, w, c = image.shape
+                    bBox = detection.location_data.relative_bounding_box
 
-            boundBox = (
-                int(bBox.xmin * w),
-                int(bBox.ymin * h),
-                int(bBox.width * w),
-                int(bBox.height * h),
-            )
-            dist = convertBoundingBoxWidthToDistance(boundBox[3])
-            virt_ipd = calcIPD(detection, image)
+                    h, w, c = image.shape
 
-            real_x, real_y, real_z = smoothPosition(*calcPosition(detection, image))
+                    boundBox = (
+                        int(bBox.xmin * w),
+                        int(bBox.ymin * h),
+                        int(bBox.width * w),
+                        int(bBox.height * h),
+                    )
+                    dist = convertBoundingBoxWidthToDistance(boundBox[3])
+                    virt_ipd = calcIPD(detection, image)
 
-            drawSmoothEyes(image, detection)
+                    real_x, real_y, real_z = smoothPosition(
+                        *calcPosition(detection, image)
+                    )
 
-            cv2.putText(
-                image,
-                f"z:{dist:.2f}cm, ipd:{virt_ipd}px",
-                (boundBox[0], boundBox[1] - 20),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1,
-                (0, 255, 0),
-                2,
-            )
+                    drawSmoothEyes(image, detection)
 
-            cv2.putText(
-                image,
-                f"X: {real_x:.2f}, Y:{real_y:.2f}, Z:{real_z:.2f}",
-                (10, 80),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1.0,
-                (0, 255, 255),
-                2,
-            )
+                    cv2.putText(
+                        image,
+                        f"z:{dist:.2f}cm, ipd:{virt_ipd}px",
+                        (boundBox[0], boundBox[1] - 20),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        1,
+                        (0, 255, 0),
+                        2,
+                    )
 
-            # savedata.append(f"{dist}")
-            # if counter == 200:
-            #     with open("out.txt", "w+") as file:
-            #         file.write("\n".join(savedata))
-            #     cap.release()
-            #     exit(0)
-            #     print("========")
-            #     print(detection.location_data)
+                    cv2.putText(
+                        image,
+                        f"X: {real_x:.2f}, Y:{real_y:.2f}, Z:{real_z:.2f}",
+                        (10, 80),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        1.0,
+                        (0, 255, 255),
+                        2,
+                    )
 
-        if fpscounter % 10 == 0:
-            totalTime = new_frame_time - prev_frame_time
-            prev_frame_time = new_frame_time
-            fps = 10 / (totalTime)
-            fpscounter = 0
+                    # savedata.append(f"{dist}")
+                    # if counter == 200:
+                    #     with open("out.txt", "w+") as file:
+                    #         file.write("\n".join(savedata))
+                    #     cap.release()
+                    #     exit(0)
+                    #     print("========")
+                    #     print(detection.location_data)
 
-        print("FPS: ", fps)
+                if self.fpscounter % 10 == 0:
+                    self.totalTime = self.new_frame_time - self.prev_frame_time
+                    self.prev_frame_time = self.new_frame_time
+                    self.fps = 10 / (self.totalTime)
+                    self.fpscounter = 0
 
-        cv2.putText(
-            image,
-            f"FPS: {int(fps)}, {totalTime:.3f}s",
-            (10, 50),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            1.0,
-            (0, 255, 0),
-            2,
-        )
+                print("FPS: ", self.fps)
 
-        cv2.imshow("Face Detection", image)
+                cv2.putText(
+                    image,
+                    f"FPS: {int(self.fps)}, {self.totalTime:.3f}s",
+                    (10, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1.0,
+                    (0, 255, 0),
+                    2,
+                )
 
-        if cv2.waitKey(2) & 0xFF == 27:
-            break
+                cv2.imshow("Face Detection", image)
 
-cap.release()
+                if cv2.waitKey(2) & 0xFF == 27:
+                    break
+
+
+if __name__ == "__main__":
+    fd = FaceDetector()
+    fd.run()
+    fd.cap.release()
