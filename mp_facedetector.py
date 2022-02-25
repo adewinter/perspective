@@ -1,13 +1,14 @@
-import cv2
-import mediapipe as mp
 import time
 import math
-
-import cvui
-
-
 from collections import deque
 from statistics import mean
+
+import cv2
+import cvui
+import numpy as np
+
+import mediapipe as mp
+
 
 LEFT_EYE_INDEX = 0
 RIGHT_EYE_INDEX = 1
@@ -128,11 +129,41 @@ def drawSmoothEyes(image, detection):
     left_eye, right_eye = smoothEyes(detection, image)
     eye_radius = 5  # px
 
-    print("Left", left_eye)
-    print("Right", right_eye)
-    # import pdb; pdb.set_trace()
     cv2.circle(image, left_eye, eye_radius, (255, 255, 255), 1)
     cv2.circle(image, right_eye, eye_radius, (255, 255, 255), 1)
+
+
+def drawSmoothPositionTextCoords(xyzPosition, image):
+    stringToRender = (
+        f"X: {xyzPosition[0]:.2f}, Y:{xyzPosition[1]:.2f}, Z:{xyzPosition[2]:.2f}"
+    )
+    textPosition = (5, 5)
+    fontSize = 0.4
+
+    cvui.text(
+        image,
+        *textPosition,
+        stringToRender,
+        fontSize,
+    )
+
+def drawRawPositionTextCoords(xyzPosition, image):
+    stringToRender = (
+        f"X: {xyzPosition[0]:.2f}, Y:{xyzPosition[1]:.2f}, Z:{xyzPosition[2]:.2f}"
+    )
+    textPosition = (5, 20)
+    fontSize = 0.4
+    fontColor = 0x00ff00
+
+
+    cvui.text(
+        image,
+        *textPosition,
+        stringToRender,
+        fontSize,
+        fontColor
+    )
+
 
 
 class FaceDetector:
@@ -153,6 +184,14 @@ class FaceDetector:
         self.savedata = []
         self.drawing_spec = self.mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
 
+        self.CVUI_WINDOW_NAME = "CVUI"
+        self.CVUI_FRAME = np.zeros((200, 600, 3), np.uint8)
+
+        self.sparkline_pos_x = deque([0] * 100, 100)
+        self.sparkline_pos_x_smooth = deque([0] * 100, 100)
+
+        cvui.init(self.CVUI_WINDOW_NAME)
+
     def run(self):
         with self.mp_facedetector.FaceDetection(
             min_detection_confidence=0.7
@@ -170,6 +209,8 @@ class FaceDetector:
                     print("Ignoring empty camera frame.")
                     # If loading a video, use 'break' instead of 'continue'.
                     continue
+
+                self.CVUI_FRAME[:] = (49, 52, 49)
 
                 self.new_frame_time = time.time()
                 self.counter += 1
@@ -189,7 +230,6 @@ class FaceDetector:
 
                 for id, detection in enumerate(results.detections):
                     self.mp_drawing.draw_detection(image, detection)
-                    # print(id, detection)
 
                     bBox = detection.location_data.relative_bounding_box
 
@@ -204,8 +244,25 @@ class FaceDetector:
                     dist = convertBoundingBoxWidthToDistance(boundBox[3])
                     virt_ipd = calcIPD(detection, image)
 
-                    real_x, real_y, real_z = smoothPosition(
-                        *calcPosition(detection, image)
+                    rawPosition = calcPosition(detection, image)
+                    position = smoothPosition(*rawPosition)
+
+                    drawRawPositionTextCoords(rawPosition, self.CVUI_FRAME)
+                    drawSmoothPositionTextCoords(position, self.CVUI_FRAME)
+                    self.sparkline_pos_x.append(rawPosition[0])
+                    self.sparkline_pos_x_smooth.append(position[0])
+
+                    cvui.sparkline(
+                        self.CVUI_FRAME, self.sparkline_pos_x, 0, 0, 600, 200, 0x00FF00
+                    )
+                    cvui.sparkline(
+                        self.CVUI_FRAME,
+                        self.sparkline_pos_x_smooth,
+                        0,
+                        0,
+                        600,
+                        200,
+                        0xFFFFFF,
                     )
 
                     drawSmoothEyes(image, detection)
@@ -220,32 +277,11 @@ class FaceDetector:
                         2,
                     )
 
-                    cv2.putText(
-                        image,
-                        f"X: {real_x:.2f}, Y:{real_y:.2f}, Z:{real_z:.2f}",
-                        (10, 80),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        1.0,
-                        (0, 255, 255),
-                        2,
-                    )
-
-                    # savedata.append(f"{dist}")
-                    # if counter == 200:
-                    #     with open("out.txt", "w+") as file:
-                    #         file.write("\n".join(savedata))
-                    #     cap.release()
-                    #     exit(0)
-                    #     print("========")
-                    #     print(detection.location_data)
-
                 if self.fpscounter % 10 == 0:
                     self.totalTime = self.new_frame_time - self.prev_frame_time
                     self.prev_frame_time = self.new_frame_time
                     self.fps = 10 / (self.totalTime)
                     self.fpscounter = 0
-
-                print("FPS: ", self.fps)
 
                 cv2.putText(
                     image,
@@ -258,6 +294,7 @@ class FaceDetector:
                 )
 
                 cv2.imshow("Face Detection", image)
+                cvui.imshow(self.CVUI_WINDOW_NAME, self.CVUI_FRAME)
 
                 if cv2.waitKey(2) & 0xFF == 27:
                     break
