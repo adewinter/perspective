@@ -15,15 +15,16 @@ with mp_face_mesh.FaceMesh(
     max_num_faces=1,
     refine_landmarks=True,
     min_detection_confidence=0.5,
-    min_tracking_confidence=0.5) as face_mesh:
+    min_tracking_confidence=0.5,
+) as face_mesh:
 
     while cap.isOpened():
 
         success, image = cap.read()
         if not success:
-          print("Ignoring empty camera frame.")
-          # If loading a video, use 'break' instead of 'continue'.
-          continue
+            print("Ignoring empty camera frame.")
+            # If loading a video, use 'break' instead of 'continue'.
+            continue
 
         start = time.time()
         counter += 1
@@ -34,10 +35,9 @@ with mp_face_mesh.FaceMesh(
         # # Process the image and find faces
         # # results = face_detection.process(image)
         # results = face_mesh.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-        
+
         # # Convert the image color back so it can be displayed
         # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-
 
         # To improve performance, optionally mark the image as not writeable to
         # pass by reference.
@@ -70,38 +70,53 @@ with mp_face_mesh.FaceMesh(
                 landmark_list=face_landmarks,
                 connections=mp_face_mesh.FACEMESH_TESSELATION,
                 landmark_drawing_spec=None,
-                connection_drawing_spec=mp_drawing_styles
-                .get_default_face_mesh_tesselation_style())
+                connection_drawing_spec=mp_drawing_styles.get_default_face_mesh_tesselation_style(),
+            )
             mp_drawing.draw_landmarks(
                 image=image,
                 landmark_list=face_landmarks,
                 connections=mp_face_mesh.FACEMESH_CONTOURS,
                 landmark_drawing_spec=None,
-                connection_drawing_spec=mp_drawing_styles
-                .get_default_face_mesh_contours_style())
+                connection_drawing_spec=mp_drawing_styles.get_default_face_mesh_contours_style(),
+            )
             mp_drawing.draw_landmarks(
                 image=image,
                 landmark_list=face_landmarks,
                 connections=mp_face_mesh.FACEMESH_IRISES,
                 landmark_drawing_spec=None,
-                connection_drawing_spec=mp_drawing_styles
-                .get_default_face_mesh_iris_connections_style())
+                connection_drawing_spec=mp_drawing_styles.get_default_face_mesh_iris_connections_style(),
+            )
 
-
-            cv2.putText(image, f'{face_landmarks.landmark[470].z*100}', (20,110), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 2)
+            cv2.putText(
+                image,
+                f"{face_landmarks.landmark[470].z*100}",
+                (20, 110),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1.5,
+                (0, 255, 0),
+                2,
+            )
             # if counter % 20 == 0:
-                # print("========")
-                # import pdb; pdb.set_trace()
-              
+            # print("========")
+            # import pdb; pdb.set_trace()
+
         end = time.time()
         totalTime = end - start
 
         fps = 1 / totalTime
         # print("FPS: ", fps)
 
-        cv2.putText(image, f'FPS: {int(fps)}', (20,70), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 2)
+        cv2.putText(
+            image,
+            f"FPS: {int(fps)}",
+            (20, 70),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1.5,
+            (0, 255, 0),
+            2,
+        )
 
-        cv2.imshow('Face Detection', image)
+        cv2.imshow("Face Detection", image)
 
         if cv2.waitKey(5) & 0xFF == 27:
             break
