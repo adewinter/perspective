@@ -39,7 +39,7 @@ class Main:
         while True:
             self.drawer.clearFrames()
             self.startFPSMeasure()
-            
+
             success, image = self.image_source.getImage()
             if not success:
                 print("Ignoring empty camera frame.")
@@ -74,7 +74,6 @@ class Main:
 
             if cv2.waitKey(2) & 0xFF == 27:
                 break
-
 
 
 if __name__ == "__main__":

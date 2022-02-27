@@ -20,7 +20,6 @@ class Drawer:
         self.CVUI_FRAME = np.zeros((200, 600, 3), np.uint8)
         cvui.init(self.CVUI_WINDOW_NAME)
 
-
     def clearFrames(self):
         self.CVUI_FRAME[:] = (49, 52, 49)
 
@@ -36,9 +35,7 @@ class Drawer:
         self.mp_drawing.draw_detection(self.image, detection)
 
     def drawTextCoordinates(self, coords1, coords2):
-        stringToRender = (
-            f"X: {coords1[0]:.2f}, Y:{coords1[1]:.2f}, Z:{coords1[2]:.2f}"
-        )
+        stringToRender = f"X: {coords1[0]:.2f}, Y:{coords1[1]:.2f}, Z:{coords1[2]:.2f}"
         textPosition = (5, 5)
         fontSize = 0.4
 
@@ -49,9 +46,7 @@ class Drawer:
             fontSize,
         )
 
-        stringToRender = (
-            f"X: {coords2[0]:.2f}, Y:{coords2[1]:.2f}, Z:{coords2[2]:.2f}"
-        )
+        stringToRender = f"X: {coords2[0]:.2f}, Y:{coords2[1]:.2f}, Z:{coords2[2]:.2f}"
         textPosition = (5, 20)
         fontSize = 0.4
 

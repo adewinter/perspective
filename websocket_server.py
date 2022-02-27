@@ -3,6 +3,7 @@ import datetime
 import random
 import websockets
 
+
 async def time(websocket, path):
     while True:
         now = datetime.datetime.utcnow().isoformat() + "Z"
@@ -10,10 +11,12 @@ async def time(websocket, path):
         print(f"Sent {now}, sleeping...")
         await asyncio.sleep(random.random() * 3)
 
+
 async def somethingelse():
     while True:
         print("something else! Sleeping...")
         await asyncio.sleep(0)
+
 
 start_server = websockets.serve(time, "127.0.0.1", 5678)
 

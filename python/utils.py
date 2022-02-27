@@ -7,10 +7,9 @@ import math
 import numpy as np
 
 
-
 LEFT_EYE_INDEX = 0
 RIGHT_EYE_INDEX = 1
-REAL_IPD = 13.5  # cm. Physical distance between my pupils
+REAL_IPD = 6.5  # cm. Physical distance between my pupils
 
 xq = deque([0] * 3, 3)
 yq = deque([0] * 3, 3)
@@ -126,4 +125,3 @@ def drawSmoothEyes(image, detection):
 
     cv2.circle(image, left_eye, eye_radius, (255, 255, 255), 1)
     cv2.circle(image, right_eye, eye_radius, (255, 255, 255), 1)
-
