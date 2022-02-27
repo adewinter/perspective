@@ -57,8 +57,33 @@ class Drawer:
             fontSize,
         )
 
+    def drawTextEyecoordinates(self, left_eye, right_eye):
+        stringToRender = f"Left Eye Rel - X: {left_eye.x:.2f}, Y:{left_eye.y:.2f}"
+        textPosition = (5, 50)
+        fontSize = 0.4
+
+        cvui.text(
+            self.CVUI_FRAME,
+            *textPosition,
+            stringToRender,
+            fontSize,
+        )
+
+        stringToRender = f"Right Eye Rel - X: {right_eye.x:.2f}, Y:{right_eye.y:.2f}"
+        textPosition = (5, 65)
+        fontSize = 0.4
+
+        cvui.text(
+            self.CVUI_FRAME,
+            *textPosition,
+            stringToRender,
+            fontSize,
+        )
+
     def drawEyes(self, eyePoints):
         eye_radius = 5  # px
+
+        
 
         cv2.circle(self.image, eyePoints[0], eye_radius, (255, 255, 255), 1)
         cv2.circle(self.image, eyePoints[1], eye_radius, (255, 255, 255), 1)

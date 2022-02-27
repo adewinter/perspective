@@ -1,9 +1,11 @@
+import time
+
 import cv2
 
 from drawer import Drawer
 from face_detector import FaceDetector
 from image_source import CameraImageSource
-from utils import *
+from position_calculator import PositionCalculator
 
 
 class Main:
@@ -19,6 +21,7 @@ class Main:
         self.image_source = CameraImageSource()
         self.drawer = Drawer()
         self.face_detector = FaceDetector()
+        self.position_calculator = PositionCalculator()
 
     def startFPSMeasure(self):
         self.new_frame_time = time.time()
@@ -55,16 +58,19 @@ class Main:
             for id, detection in enumerate(detections):
                 self.drawer.drawFaceAndBoundingBox(detection)
 
-                rawPosition = calcPosition(detection, image_height, image_width)
-                position = smoothPosition(*rawPosition)
+                rawPosition = self.position_calculator.calcPosition(detection, image_height, image_width)
+                position = self.position_calculator.smoothPosition(*rawPosition)
 
                 self.drawer.drawTextCoordinates(rawPosition, position)
                 self.drawer.drawSparklines(rawPosition[0], position[0])
 
-                eyePoints = smoothEyePositions(detection, image_height, image_width)
+                eyePoints = self.position_calculator.smoothEyePositions(detection, image_height, image_width)
                 self.drawer.drawEyes(eyePoints)
 
-                virt_ipd = calcIPD(detection, image_height, image_width)
+                relativeEyePoints = self.position_calculator.getRelativeEyePosition(detection)
+                self.drawer.drawTextEyecoordinates(*relativeEyePoints)
+
+                virt_ipd = self.position_calculator.calcIPD(detection, image_height, image_width)
                 self.drawer.drawCalulatedIPDText(virt_ipd)
 
             self.endFPSMeasure()
