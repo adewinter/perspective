@@ -1,3 +1,11 @@
+from collections import deque
+
+import cv2
+import cvui
+import mediapipe as mp
+import numpy as np
+
+
 class Drawer:
     """
     Responsible for rendering the image from the ImageSource, FaceDetection details, other data, etc
@@ -8,19 +16,26 @@ class Drawer:
         self.sparkline_data_q1 = deque([0] * 100, 100)
         self.sparkline_data_q2 = deque([0] * 100, 100)
 
-    
+        self.CVUI_WINDOW_NAME = "CVUI"
+        self.CVUI_FRAME = np.zeros((200, 600, 3), np.uint8)
+        cvui.init(self.CVUI_WINDOW_NAME)
+
+
+    def clearFrames(self):
+        self.CVUI_FRAME[:] = (49, 52, 49)
+
     def setImage(self, image):
         self.image = image
         return image.shape
 
     def showUI(self):
-        cv2.imshow("Face Detection", image)
+        cv2.imshow("Face Detection", self.image)
         cvui.imshow(self.CVUI_WINDOW_NAME, self.CVUI_FRAME)
 
-    def drawFaceAndBoundingBox(self, image, detection):
-        self.mp_drawing.draw_detection(image, detection)
+    def drawFaceAndBoundingBox(self, detection):
+        self.mp_drawing.draw_detection(self.image, detection)
 
-    def drawTextCoordinates(self, image, coords1, coords2):
+    def drawTextCoordinates(self, coords1, coords2):
         stringToRender = (
             f"X: {coords1[0]:.2f}, Y:{coords1[1]:.2f}, Z:{coords1[2]:.2f}"
         )
@@ -28,7 +43,7 @@ class Drawer:
         fontSize = 0.4
 
         cvui.text(
-            image,
+            self.CVUI_FRAME,
             *textPosition,
             stringToRender,
             fontSize,
@@ -41,19 +56,19 @@ class Drawer:
         fontSize = 0.4
 
         cvui.text(
-            image,
+            self.CVUI_FRAME,
             *textPosition,
             stringToRender,
             fontSize,
         )
 
-    def drawEyes(self, image, eyePoints):
+    def drawEyes(self, eyePoints):
         eye_radius = 5  # px
 
-        cv2.circle(image, eyePoints[0], eye_radius, (255, 255, 255), 1)
-        cv2.circle(image, eyePoints[1], eye_radius, (255, 255, 255), 1)
+        cv2.circle(self.image, eyePoints[0], eye_radius, (255, 255, 255), 1)
+        cv2.circle(self.image, eyePoints[1], eye_radius, (255, 255, 255), 1)
 
-    def drawSparklines(self, image, dataPoint1, dataPoint2):
+    def drawSparklines(self, dataPoint1, dataPoint2):
         self.sparkline_data_q1.append(dataPoint1)
         self.sparkline_data_q2.append(dataPoint2)
 
@@ -70,20 +85,21 @@ class Drawer:
             0xFFFFFF,
         )
 
-    def drawCalulatedIPDText(self, image, virt_ipd):
-        cv2.putText(
-            image,
-            f"ipd:{virt_ipd:.1f}px",
-            (boundBox[0], boundBox[1] - 20),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            1,
-            (0, 255, 0),
-            2,
+    def drawCalulatedIPDText(self, virt_ipd):
+        stringToRender = f"ipd:{virt_ipd:.1f}px"
+        textPosition = (5, 35)
+        fontSize = 0.4
+
+        cvui.text(
+            self.CVUI_FRAME,
+            *textPosition,
+            stringToRender,
+            fontSize,
         )
 
-    def drawFPS(self, image, fps, timePerFrame):
+    def drawFPS(self, fps, timePerFrame):
         cv2.putText(
-            image,
+            self.image,
             f"FPS: {int(fps)}, {timePerFrame:.3f}s",
             (10, 50),
             cv2.FONT_HERSHEY_SIMPLEX,
