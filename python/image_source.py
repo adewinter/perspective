@@ -6,7 +6,7 @@ class ImageSource:
         """initialize the source of images"""
         pass
 
-    def getImage(self):
+    async def getImage(self):
         """get a single image frame"""
         pass
 
@@ -16,7 +16,7 @@ class CameraImageSource(ImageSource):
         self.cap = cv2.VideoCapture(0, cv2.CAP_ANY)
         self.cap.set(cv2.CAP_PROP_FPS, 60)
 
-    def getImage(self):
+    async def getImage(self):
         success, image = self.cap.read()
         if success:
             image = cv2.flip(image, 1)

@@ -1,11 +1,14 @@
+import asyncio
 import time
 
 import cv2
+import websockets
 
 from drawer import Drawer
 from face_detector import FaceDetector
 from image_source import CameraImageSource
 from position_calculator import PositionCalculator
+from websocket_server import WebsocketServer
 
 
 class Main:
@@ -38,12 +41,31 @@ class Main:
     def close(self):
         self.image_source.close()
 
-    def run(self):
+    def draw_detection_data(self, detection, image_height, image_width):
+        self.drawer.drawFaceAndBoundingBox(detection)
+
+        rawPosition = self.position_calculator.calcPosition(detection, image_height, image_width)
+        position = self.position_calculator.smoothPosition(*rawPosition)
+
+        self.drawer.drawTextCoordinates(rawPosition, position)
+        self.drawer.drawSparklines(rawPosition[0], position[0])
+
+        eyePoints = self.position_calculator.smoothEyePositions(detection, image_height, image_width)
+        self.drawer.drawEyes(eyePoints)
+
+        relativeEyePoints = self.position_calculator.getRelativeEyePosition(detection)
+        self.drawer.drawTextEyecoordinates(*relativeEyePoints)
+
+        virt_ipd = self.position_calculator.calcIPD(detection, image_height, image_width)
+        self.drawer.drawCalulatedIPDText(virt_ipd)
+
+    async def run_face_detector(self):
+        await asyncio.sleep(1)
         while True:
             self.drawer.clearFrames()
             self.startFPSMeasure()
 
-            success, image = self.image_source.getImage()
+            success, image = await self.image_source.getImage()
             if not success:
                 print("Ignoring empty camera frame.")
                 continue
@@ -56,22 +78,7 @@ class Main:
                 continue
 
             for id, detection in enumerate(detections):
-                self.drawer.drawFaceAndBoundingBox(detection)
-
-                rawPosition = self.position_calculator.calcPosition(detection, image_height, image_width)
-                position = self.position_calculator.smoothPosition(*rawPosition)
-
-                self.drawer.drawTextCoordinates(rawPosition, position)
-                self.drawer.drawSparklines(rawPosition[0], position[0])
-
-                eyePoints = self.position_calculator.smoothEyePositions(detection, image_height, image_width)
-                self.drawer.drawEyes(eyePoints)
-
-                relativeEyePoints = self.position_calculator.getRelativeEyePosition(detection)
-                self.drawer.drawTextEyecoordinates(*relativeEyePoints)
-
-                virt_ipd = self.position_calculator.calcIPD(detection, image_height, image_width)
-                self.drawer.drawCalulatedIPDText(virt_ipd)
+                self.draw_detection_data(detection, image_height, image_width)
 
             self.endFPSMeasure()
             self.drawer.drawFPS(self.fps, self.totalTime)
@@ -82,7 +89,16 @@ class Main:
                 break
 
 
+
+
 if __name__ == "__main__":
     main = Main()
-    main.run()
+    websocket_server = WebsocketServer()
+
+    loop = asyncio.get_event_loop()
+    
+    loop.create_task(main.run_face_detector())
+    loop.run_until_complete(websocket_server.server)
+    loop.run_forever()
+    
     main.close()
