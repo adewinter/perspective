@@ -1,11 +1,12 @@
 from collections import deque
+import random
 
 import cv2
 import cvui
 import mediapipe as mp
 import numpy as np
 
-
+from settings import DEBUG
 class Drawer:
     """
     Responsible for rendering the image from the ImageSource, FaceDetection details, other data, etc
@@ -83,12 +84,13 @@ class Drawer:
     def drawEyes(self, eyePoints):
         eye_radius = 5  # px
 
-        
-
         cv2.circle(self.image, eyePoints[0], eye_radius, (255, 255, 255), 1)
         cv2.circle(self.image, eyePoints[1], eye_radius, (255, 255, 255), 1)
 
     def drawSparklines(self, dataPoint1, dataPoint2):
+        if DEBUG:
+            dataPoint1 += random.random()
+            dataPoint2 += random.random()
         self.sparkline_data_q1.append(dataPoint1)
         self.sparkline_data_q2.append(dataPoint2)
 

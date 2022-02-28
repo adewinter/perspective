@@ -24,3 +24,13 @@ class CameraImageSource(ImageSource):
 
     def close(self):
         self.cap.release()
+
+class FakeCameraSource(ImageSource):
+    def __init__(self):
+        self.image = cv2.imread('../fake.png')
+
+    async def getImage(self):
+        return True, self.image.copy()
+
+    def close(self):
+        spass
