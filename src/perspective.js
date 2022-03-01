@@ -32,8 +32,8 @@ let portalMesh, portalTexture, refMesh;
 
 let refMeshTL, refMeshBL, refMeshBR
 
-const rendererWidth = 1100;
-const rendererHeight = 1100;
+const rendererWidth = document.body.clientWidth;
+const rendererHeight = document.documentElement.clientHeight;
 
 const sceneWindowWidthInitial = 1; //meters
 const sceneWindowHeightInitial = 1*(rendererHeight/rendererWidth); //meters
@@ -57,7 +57,7 @@ let USE_MAIN_CAMERA_FOR_VIEW = false;
 
 
 function initRendererAndScene() {
-    const container = document.getElementById( 'container' );
+    const container = document.getElementById('3dviewcontainer' );
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( rendererWidth, rendererHeight );
@@ -69,8 +69,8 @@ function initRendererAndScene() {
 
 function createStats() {
     stats = new Stats();
-    stats.dom.style.position = "relative";
-    document.body.appendChild( stats.dom );
+    stats.dom.id = "fps-stats";
+    document.getElementById('3dviewcontainer' ).appendChild(stats.dom);
 }
 
 function createClocks() {
@@ -82,6 +82,9 @@ function createGUI() {
     const websocketFolder = gui.addFolder('Websocket');
     websocketFolder.add({toggle:WebsocketClientApp.toggleWebsocketConnection}, 'toggle').name('Connect/Disconnect Headtracker');
     websocketFolder.open();
+    const positionDataFolder = gui.addFolder('Position Data');
+    positionDataFolder.add({toggleDataFeed:WebsocketClientApp.toggleUseRawPosition}, 'toggleDataFeed').name('Toggle Raw/Smooth data');
+    positionDataFolder.open();
     const perspFolder = gui.addFolder('Perspective Camera');
     perspFolder.add(portalCamOffset, 'lockX');
     perspFolder.add(portalCamOffset, 'lockY');
@@ -205,9 +208,9 @@ function check_url_params() {
 
 function init() {
     initDomEls();
+    createStats();
     initRendererAndScene();
     createClocks();
-    createStats();
 
     let target = createScene();
     createCameras(target);

@@ -2,6 +2,7 @@ body {
     color: #444;
     display: flex;
     flex-flow: row wrap;
+    margin: 0;
 }
 a {
     color: #08f;
@@ -45,10 +46,13 @@ a {
   margin: 0;
 }
 
-#container {
-    margin-top: 40px;
+#3dviewcontainer {
 }
 #canvas-wrapper,
 #scatter-gl-container {
   position: relative;
+}
+
+#fps-stats {
+    position: absolute;
 }

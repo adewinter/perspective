@@ -3,13 +3,13 @@ let wsocket;
 let counter = 0;
 
 const DEBUG = true;
-
+let SHOULD_USE_RAW_POSITION = false;
 function onMessageEvent(event) {
     counter += 1;
     let data = event.data;
     try {
-        let new_position = JSON.parse(data);
-        set_new_position_data(new_position);
+        let parsed_data = JSON.parse(data);
+        set_new_position_data(parsed_data);
     } catch (error) {
         console.error("Error parsing data received from websocket/headtracker:", error);
     }
@@ -19,7 +19,13 @@ function onMessageEvent(event) {
     }
 }
 
-function set_new_position_data(position) {
+export function toggleUseRawPosition() {
+    SHOULD_USE_RAW_POSITION = !SHOULD_USE_RAW_POSITION;
+    console.log("Should use raw position data set to:", SHOULD_USE_RAW_POSITION);
+}
+
+function set_new_position_data(json_data) {
+    position = SHOULD_USE_RAW_POSITION ? json_data['rawPosition'] : json_data['position'];
     window.headPosition = position;
 }
 

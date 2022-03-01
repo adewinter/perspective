@@ -15,18 +15,23 @@ class WebsocketServer:
     def formatPosition(self, position):
         _position = [x / 100.0 for x in position]
 
-        return json.dumps({"x": _position[0], "y": _position[1], "z": -1*_position[2]})
+        return {"x": _position[0], "y": _position[1], "z": -1*_position[2]}
 
     async def send_position(self, websocket, path):
         print("In send_time loop...")
         while True:
             await asyncio.sleep(0.01)  # shoot for approx 60 fps
             now = datetime.datetime.utcnow().isoformat() + "Z"
-            position_to_send = self.formatPosition(self.face_pose.position)
+            position = self.formatPosition(self.face_pose.position)
+            raw_position = self.formatPosition(self.face_pose.rawPosition)
+            data_to_send = json.dumps({
+                "rawPosition": raw_position,
+                "position": position
+            })
             try:
-                await websocket.send(position_to_send)
+                await websocket.send(data_to_send)
                 if self.counter % 30 == 0:
-                    print(f"[{now}] Sent: {position_to_send}")
+                    print(f"[{now}] Sent: {data_to_send}")
                 self.counter += 1
             except websockets.ConnectionClosed:
                 break
