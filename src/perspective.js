@@ -10,6 +10,7 @@ import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
 import HeadtrackingApp from './headtracking/headtracking.js';
 import * as roomGenerator from './room_generate.js';
+import * as WebsocketClientApp from './websocket_client.js';
 
 let mainCamera, portalCamera, portalCameraHelper, scene, renderer;
 
@@ -49,7 +50,7 @@ let gui;
 
 let portalCamOffset = {x:0, y:-0.61, z:0, scaleX:1, scaleY:1, scaleZ:1, lockX: false, lockY: false, lockZ: false};
 
-let SHOULD_LAUNCH_HEADTRACKING = true;
+let SHOULD_LAUNCH_HEADTRACKING = false;
 let USE_PORTAL_CAMERA_HELPER = false;
 let IS_REFMESH_TRANSPARENT = true;
 let USE_MAIN_CAMERA_FOR_VIEW = false;

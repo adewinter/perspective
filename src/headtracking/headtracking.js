@@ -17,16 +17,6 @@ const NOSE_INDEX = 0;
 let posXEl, posYEl, posZEl, calcZEl;
 let posX3dEl, posY3dEl, posZ3dEl, calcZ3dEl;
 
-// const SCREEN_HEIGHT_METERS = 0.2794;
-// const SCREEN_WIDTH_METERS = 9999
-
-
-// const blazepose_distance_ratio_map = {
-//   // [z, actual_head_distance_from_screen_in_meters]
-//   [-1.00, 0.60],
-//   [-2.00, 0.30]
-// }
-
 async function createDetector() {
     let detectorConfig = {
       runtime: 'mediapipe',
@@ -175,24 +165,13 @@ async function renderResult() {
     camera.drawResults(poses);
   }
 }
-const shouldStop = false;
-function handleshouldStop() {
-  if (shouldStop) {
-    shouldStop = false;
-    renderPrediction();
-  } else {
-    shouldStop = true;
-  }
-}
 
 let prev_timestamp = 0
 async function renderPrediction(ts) {
   // console.log("DT IS:", prev_timestamp - ts);
-  if (!shouldStop) {
     prev_timestamp = ts;
     await renderResult();
     rafId = requestAnimationFrame(renderPrediction);
-  }
 };
 
 function initMisc() {
@@ -208,15 +187,6 @@ function initMisc() {
 }
 
 export default async function app() {
-  // Gui content will change depending on which model is in the query string.
-  // const urlParams = new URLSearchParams(window.location.search);
-  // if (!urlParams.has('model')) {
-  //   alert('Cannot find model in the query string.');
-  //   return;
-  // }
-
-  // await setupDatGui(urlParams);
-
   initMisc();
   stats = setupStats();
 
