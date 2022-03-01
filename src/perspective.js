@@ -48,7 +48,7 @@ let flagLookOnce = false;
 
 let gui;
 
-let portalCamOffset = {x:0, y:-0.61, z:0, scaleX:1, scaleY:1, scaleZ:1, lockX: false, lockY: false, lockZ: false};
+let portalCamOffset = {x:0, y:0, z:0, scaleX:1, scaleY:1, scaleZ:1, lockX: false, lockY: false, lockZ: false};
 
 let SHOULD_LAUNCH_HEADTRACKING = false;
 let USE_PORTAL_CAMERA_HELPER = false;
@@ -79,6 +79,9 @@ function createClocks() {
 
 function createGUI() {
     gui = new GUI();
+    const websocketFolder = gui.addFolder('Websocket');
+    websocketFolder.add({toggle:WebsocketClientApp.toggleWebsocketConnection}, 'toggle').name('Connect/Disconnect Headtracker');
+    websocketFolder.open();
     const perspFolder = gui.addFolder('Perspective Camera');
     perspFolder.add(portalCamOffset, 'lockX');
     perspFolder.add(portalCamOffset, 'lockY');
@@ -217,6 +220,8 @@ function init() {
     if(SHOULD_LAUNCH_HEADTRACKING) {
         HeadtrackingApp();
     }
+
+    // WebsocketClientApp.init_websocket_client();
     
 }
 
@@ -283,7 +288,7 @@ function getHeadCoordsAndMoveCamera() {
     // hp.z *= portalCamOffset.scaleZ;
 
     if(!portalCamOffset.lockX) {
-        portalCamera.position.x += (+(hp.x * -1 * portalCamOffset.scaleX).toFixed(2));
+        portalCamera.position.x += (+(hp.x * portalCamOffset.scaleX).toFixed(2));
     }
 
     if(!portalCamOffset.lockY) {
@@ -291,7 +296,7 @@ function getHeadCoordsAndMoveCamera() {
     }
 
     if(!portalCamOffset.lockZ) {
-        portalCamera.position.z += (+(hp.z * -1 * portalCamOffset.scaleZ).toFixed(2));
+        portalCamera.position.z += (+(hp.z * portalCamOffset.scaleZ).toFixed(2));
     }
     
     //Debug device so we can use the GUI to shift the portal cam around a bit
