@@ -3,6 +3,7 @@ import datetime
 import random
 import asyncio
 import json
+from settings import DEBUG
 
 
 class WebsocketServer:
@@ -18,7 +19,7 @@ class WebsocketServer:
         return {"x": _position[0], "y": _position[1], "z": _position[2]}
 
     async def send_position(self, websocket, path):
-        print("In send_time loop...")
+        print("Client connected!", websocket)
         while True:
             await asyncio.sleep(0.01)  # shoot for approx 60 fps
             now = datetime.datetime.utcnow().isoformat() + "Z"
@@ -30,7 +31,7 @@ class WebsocketServer:
             })
             try:
                 await websocket.send(data_to_send)
-                if self.counter % 30 == 0:
+                if self.counter % 30 == 0 and DEBUG:
                     print(f"[{now}] Sent: {data_to_send}")
                 self.counter += 1
             except websockets.ConnectionClosed:

@@ -5,74 +5,43 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls.js";
 
 import Stats from "stats.js";
-import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 
+import settings from "./settings.js";
+import PerspectiveGUI from "./gui.js";
 import HeadtrackingApp from "./headtracking/headtracking.js";
 import * as roomGenerator from "./room_generate.js";
-import * as WebsocketClientApp from "./websocket_client.js";
+import WebsocketClient from "./websocket_client.js";
 
-let mainCamera, portalCamera, portalCameraHelper, scene, renderer;
+let mainCamera,
+    portalCamera,
+    portalCameraHelper,
+    scene,
+    renderer,
+    perspectiveGUI,
+    websocketClient;
 
 let cameraControls;
 
 let clock;
 
 let stats;
-
+const pose = {
+    position: { x: 0.0, y: -0.0, z: 0.0 },
+    rawPosition: { x: 0.0, y: -0.0, z: 0.0 },
+};
 let portalCamPosXEl;
 let portalCamPosYEl;
 let portalCamPosZEl;
-
-const portalWidth = 4.0;
-const portalHeight = 6.0;
 
 let portalMesh, portalTexture, refMesh;
 
 let refMeshTL, refMeshBL, refMeshBR;
 
-const rendererWidth = document.body.clientWidth;
-const rendererHeight = document.documentElement.clientHeight;
-
-const sceneWindowWidthInitial = 0.34; //meters
-const sceneWindowHeightInitial =
-    1 * (rendererHeight / rendererWidth) * sceneWindowWidthInitial; //meters
-
-const sceneWindow = {
-    //dimensions of our 'window into the world'
-    width: sceneWindowWidthInitial,
-    height: sceneWindowHeightInitial,
-    x: 0,
-    y: 0,
-    z: 0,
-    IS_REFMESH_TRANSPARENT: true,
-};
-
-// we will treat 1 ThreeJS/WebGL unit as 1 meter when working with x/y/z etc
-let flagLookOnce = false;
-
-let gui;
-
-let portalCamOffset = {
-    x: 0,
-    y: 0.1,
-    z: 0.0,
-    scaleX: 1,
-    scaleY: -1,
-    scaleZ: 1,
-    lockX: false,
-    lockY: false,
-    lockZ: false,
-};
-
-let SHOULD_LAUNCH_HEADTRACKING = false;
-let USE_PORTAL_CAMERA_HELPER = true;
-let USE_MAIN_CAMERA_FOR_VIEW = false;
-
 function initRendererAndScene() {
     const container = document.getElementById("3dviewcontainer");
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(rendererWidth, rendererHeight);
+    renderer.setSize(settings.rendererWidth, settings.rendererHeight);
     container.appendChild(renderer.domElement);
     renderer.localClippingEnabled = true;
     scene = new THREE.Scene();
@@ -89,57 +58,6 @@ function createClocks() {
     clock = new THREE.Clock();
 }
 
-function toggleCamera() {
-    USE_MAIN_CAMERA_FOR_VIEW = !USE_MAIN_CAMERA_FOR_VIEW;
-}
-
-function createGUI() {
-    gui = new GUI();
-    const viewFolder = gui.addFolder("View");
-    viewFolder.open();
-    viewFolder
-        .add({ toggleCamera: toggleCamera }, "toggleCamera")
-        .name("Swap Between Main and Portal Camera");
-    const websocketFolder = gui.addFolder("Websocket");
-    websocketFolder
-        .add({ toggle: WebsocketClientApp.toggleWebsocketConnection }, "toggle")
-        .name("Connect/Disconnect Headtracker");
-    websocketFolder.open();
-    const positionDataFolder = gui.addFolder("Position Data");
-    positionDataFolder
-        .add(
-            { toggleDataFeed: WebsocketClientApp.toggleUseRawPosition },
-            "toggleDataFeed"
-        )
-        .name("Toggle Raw/Smooth data");
-    positionDataFolder.open();
-    const perspFolder = gui.addFolder("Perspective Camera");
-    perspFolder.add(portalCamOffset, "lockX");
-    perspFolder.add(portalCamOffset, "lockY");
-    perspFolder.add(portalCamOffset, "lockZ");
-    perspFolder.add(portalCamOffset, "x", -3.1, 3);
-    perspFolder.add(portalCamOffset, "y", -3.1, 3);
-    perspFolder.add(portalCamOffset, "z", -3.1, 3);
-    perspFolder.open();
-
-    const perspScaleFolder = perspFolder.addFolder(
-        "Movement scaling multipliers"
-    );
-    perspScaleFolder.add(portalCamOffset, "scaleX", -3, 3);
-    perspScaleFolder.add(portalCamOffset, "scaleY", -3, 3);
-    perspScaleFolder.add(portalCamOffset, "scaleZ", -3, 3);
-    perspScaleFolder.open();
-
-    const sceneWindowFolder = gui.addFolder("Scene Window Dimensions");
-    sceneWindowFolder.add(sceneWindow, "IS_REFMESH_TRANSPARENT");
-    sceneWindowFolder.add(sceneWindow, "width", 0, 3.1);
-    sceneWindowFolder.add(sceneWindow, "height", 0, 3.1);
-    sceneWindowFolder.add(sceneWindow, "x", -2, 2.0);
-    sceneWindowFolder.add(sceneWindow, "y", -2, 2.0);
-    sceneWindowFolder.add(sceneWindow, "z", -2, 2.0);
-    sceneWindowFolder.open();
-}
-
 function setupMainCameraControls() {
     cameraControls = new FlyControls(mainCamera, renderer.domElement);
     cameraControls.movementSpeed = 5;
@@ -152,13 +70,13 @@ function setupMainCameraControls() {
 function createCameras() {
     mainCamera = new THREE.PerspectiveCamera(
         45,
-        rendererWidth / rendererHeight,
+        settings.rendererWidth / settings.rendererHeight,
         0.01,
         100
     );
     portalCamera = new THREE.PerspectiveCamera(
         45,
-        sceneWindowWidthInitial / sceneWindowHeightInitial,
+        settings.sceneWindowWidthInitial / settings.sceneWindowHeightInitial,
         0.01,
         500.0
     );
@@ -169,7 +87,7 @@ function createCameras() {
 
     scene.add(portalCamera);
 
-    if (USE_PORTAL_CAMERA_HELPER) {
+    if (settings.USE_PORTAL_CAMERA_HELPER) {
         portalCameraHelper = new THREE.CameraHelper(portalCamera);
         scene.add(portalCameraHelper);
     }
@@ -180,13 +98,13 @@ function createWorldWindow() {
     refMeshBR = new THREE.Vector3();
     refMeshTL = new THREE.Vector3();
     const planeGeo = new THREE.PlaneGeometry(
-        sceneWindow.width,
-        sceneWindow.height
+        settings.sceneWindow.width,
+        settings.sceneWindow.height
     );
     const planeMat = new THREE.MeshBasicMaterial({
         opacity: 0.0,
-        transparent: sceneWindow.IS_REFMESH_TRANSPARENT,
-        wireframe: !sceneWindow.IS_REFMESH_TRANSPARENT,
+        transparent: settings.sceneWindow.IS_REFMESH_TRANSPARENT,
+        wireframe: !settings.sceneWindow.IS_REFMESH_TRANSPARENT,
     });
     const planeMesh = new THREE.Mesh(planeGeo, planeMat);
     return planeMesh;
@@ -194,10 +112,11 @@ function createWorldWindow() {
 
 function createportalMesh() {
     const portalGeo = new THREE.PlaneGeometry(
-        sceneWindow.width * 20,
-        sceneWindow.height * 20
+        settings.sceneWindow.width * 20,
+        settings.sceneWindow.height * 20
     );
-    const portalTextureXResolution = (1024 * portalWidth) / portalHeight;
+    const portalTextureXResolution =
+        (1024 * settings.portalWidth) / settings.portalHeight;
     const portalTextureYResolution = 1024;
     portalTexture = new THREE.WebGLRenderTarget(
         portalTextureXResolution,
@@ -232,12 +151,12 @@ function createScene() {
     scene.add(refMesh);
 
     const room1 = roomGenerator.createRoomWithOrnaments(
-        sceneWindow.width,
-        sceneWindow.height,
-        sceneWindow.width,
+        settings.sceneWindow.width,
+        settings.sceneWindow.height,
+        settings.sceneWindow.width,
         5
     );
-    room1.position.y -= sceneWindow.height / 2;
+    room1.position.y -= settings.sceneWindow.height / 2;
 
     scene.add(room1);
 
@@ -262,7 +181,7 @@ function check_url_params() {
 
     if (params.skipheadtrack === "1") {
         console.log("SKIPPING LAUNCH OF HEADTRACKING!");
-        SHOULD_LAUNCH_HEADTRACKING = false;
+        settings.SHOULD_LAUNCH_HEADTRACKING = false;
     }
 }
 
@@ -277,14 +196,14 @@ function init() {
     setupMainCameraControls();
     window.portalCamera = portalCamera;
     window.refMesh = refMesh;
-    createGUI();
+    websocketClient = new WebsocketClient(settings, pose);
+    perspectiveGUI = new PerspectiveGUI(settings, websocketClient);
 
     check_url_params();
-    if (SHOULD_LAUNCH_HEADTRACKING) {
+    if (settings.SHOULD_LAUNCH_HEADTRACKING) {
         HeadtrackingApp();
     }
-
-    WebsocketClientApp.connect_websocket();
+    websocketClient.connect_websocket();
 }
 
 function updateControls() {
@@ -301,17 +220,29 @@ function renderPortal() {
     renderer.shadowMap.autoUpdate = false; // Avoid re-computing shadows
 
     // find refMesh corners;
-    refMeshBL.set(-sceneWindow.width / 2, -sceneWindow.height / 2, 0);
-    // refMeshBR.set(-sceneWindow.width/2, -sceneWindow.height/2, 0);
+    refMeshBL.set(
+        -settings.sceneWindow.width / 2,
+        -settings.sceneWindow.height / 2,
+        0
+    );
+    // refMeshBR.set(-settings.sceneWindow.width/2, -settings.sceneWindow.height/2, 0);
 
     refMesh.localToWorld(refMeshBL);
 
-    refMeshBR.set(sceneWindow.width / 2, -sceneWindow.height / 2, 0);
-    // refMeshBL.set(sceneWindow.width/2, -sceneWindow.height/2, 0);
+    refMeshBR.set(
+        settings.sceneWindow.width / 2,
+        -settings.sceneWindow.height / 2,
+        0
+    );
+    // refMeshBL.set(settings.sceneWindow.width/2, -settings.sceneWindow.height/2, 0);
 
     refMesh.localToWorld(refMeshBR);
 
-    refMeshTL.set(-sceneWindow.width / 2, sceneWindow.height / 2, 0);
+    refMeshTL.set(
+        -settings.sceneWindow.width / 2,
+        settings.sceneWindow.height / 2,
+        0
+    );
     refMesh.localToWorld(refMeshTL);
 
     // render the portal effect
@@ -339,17 +270,22 @@ function renderPortal() {
     renderer.setRenderTarget(currentRenderTarget);
 }
 
-window.headPosition = { x: 0.0, y: -0.0, z: 0.0 };
 function getHeadCoordsAndMoveCamera() {
     let camera_position = new THREE.Vector3(0, 0, 0);
+    let headPosition = settings.headtracking.SHOULD_USE_RAW_POSITION
+        ? pose.position
+        : pose.rawPosition;
 
     // Treat GUI x,y,z values as offset values to be added to value provided by headtracker
     camera_position.x =
-        window.headPosition.x * portalCamOffset.scaleX + portalCamOffset.x;
+        headPosition.x * settings.portalCamOffset.scaleX +
+        settings.portalCamOffset.x;
     camera_position.y =
-        window.headPosition.y * portalCamOffset.scaleY + portalCamOffset.y;
+        headPosition.y * settings.portalCamOffset.scaleY +
+        settings.portalCamOffset.y;
     camera_position.z =
-        window.headPosition.z * portalCamOffset.scaleZ + portalCamOffset.z;
+        headPosition.z * settings.portalCamOffset.scaleZ +
+        settings.portalCamOffset.z;
 
     //Figure out world coordinates of camera_position (which is a vector relative to the origin of refMesh)
     refMesh.localToWorld(camera_position);
@@ -363,14 +299,16 @@ function getHeadCoordsAndMoveCamera() {
 }
 
 function updateRefMeshDimensionsAndMaterial() {
-    refMesh.scale.x = sceneWindow.width / sceneWindowWidthInitial;
-    refMesh.scale.y = sceneWindow.height / sceneWindowHeightInitial;
-    refMesh.position.x = sceneWindow.x;
-    refMesh.position.y = sceneWindow.y;
-    refMesh.position.z = sceneWindow.z;
+    refMesh.scale.x =
+        settings.sceneWindow.width / settings.sceneWindowWidthInitial;
+    refMesh.scale.y =
+        settings.sceneWindow.height / settings.sceneWindowHeightInitial;
+    refMesh.position.x = settings.sceneWindow.x;
+    refMesh.position.y = settings.sceneWindow.y;
+    refMesh.position.z = settings.sceneWindow.z;
 
-    refMesh.material.transparent = sceneWindow.IS_REFMESH_TRANSPARENT;
-    refMesh.material.wireframe = !sceneWindow.IS_REFMESH_TRANSPARENT;
+    refMesh.material.transparent = settings.sceneWindow.IS_REFMESH_TRANSPARENT;
+    refMesh.material.wireframe = !settings.sceneWindow.IS_REFMESH_TRANSPARENT;
 }
 
 function animate() {
@@ -383,14 +321,9 @@ function animate() {
     renderPortal();
     renderer.render(
         scene,
-        USE_MAIN_CAMERA_FOR_VIEW ? mainCamera : portalCamera
+        settings.USE_MAIN_CAMERA_FOR_VIEW ? mainCamera : portalCamera
     );
     stats.update();
-
-    if (flagLookOnce) {
-        flagLookOnce = false;
-        portalCamera.lookAt(refMesh.position);
-    }
 }
 
 init();

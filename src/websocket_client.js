@@ -1,85 +1,86 @@
-let wsocket;
-
-let counter = 0;
-
-const DEBUG = false;
-let SHOULD_USE_RAW_POSITION = false;
-function onMessageEvent(event) {
-    counter += 1;
-    let data = event.data;
-    let parsed_data;
-    try {
-        parsed_data = JSON.parse(data);
-    } catch (error) {
-        console.error(
-            "Error parsing data received from websocket/headtracker:",
-            error
-        );
-        return;
+export default class WebsocketClient {
+    constructor(settings, pose) {
+        this.settings = settings;
+        this.wsocket;
+        this.counter = 0;
+        this.DEBUG = settings.DEBUG;
+        this.pose = pose;
     }
 
-    set_new_position_data(parsed_data);
-    if (counter % 150 === 0) {
-        logReceivedData(event.data);
+    set_new_position_data(json_data) {
+        Object.assign(this.pose, json_data); //merges in new data into existing this.pose object
     }
-}
 
-export function toggleUseRawPosition() {
-    SHOULD_USE_RAW_POSITION = !SHOULD_USE_RAW_POSITION;
-    console.log(
-        "Should use raw position data set to:",
-        SHOULD_USE_RAW_POSITION
-    );
-}
+    onMessageEvent(event) {
+        this.counter += 1;
+        let data = event.data;
+        let parsed_data;
+        try {
+            parsed_data = JSON.parse(data);
+        } catch (error) {
+            console.error(
+                "Error parsing data received from websocket/headtracker:",
+                error
+            );
+            return;
+        }
 
-function set_new_position_data(json_data) {
-    const position = SHOULD_USE_RAW_POSITION
-        ? json_data["rawPosition"]
-        : json_data["position"];
-    window.headPosition = position;
-}
-
-export function connect_websocket() {
-    console.log("Connecting websocket");
-    wsocket = new WebSocket("ws://127.0.0.1:5678/");
-    wsocket.addEventListener("message", onMessageEvent);
-    wsocket.addEventListener("open", onOpenEvent);
-    wsocket.addEventListener("close", onCloseEvent);
-}
-
-export function disconnect_websocket() {
-    console.log("Disconnecting from Headtracker...");
-    wsocket.close();
-    wsocket = undefined;
-}
-
-export function toggleWebsocketConnection() {
-    if (wsocket === undefined) {
-        connect_websocket();
-    } else {
-        disconnect_websocket();
+        this.set_new_position_data(parsed_data);
+        if (this.counter % 150 === 0) {
+            this.logReceivedData(event.data);
+        }
     }
-}
 
-function logReceivedData(data) {
-    if (DEBUG) {
+    toggleUseRawPosition() {
+        this.settings.headtracking.SHOULD_USE_RAW_POSITION =
+            !this.settings.headtracking.SHOULD_USE_RAW_POSITION;
         console.log(
-            "Data received:",
-            data,
-            "Total number of received positions:",
-            counter
+            "Should use raw position data set to:",
+            this.settings.headtracking.SHOULD_USE_RAW_POSITION
         );
     }
-}
 
-function onOpenEvent(event) {
-    console.log("Successfully connected to headtracker.");
-}
+    connect_websocket() {
+        console.log("Connecting websocket");
+        this.wsocket = new WebSocket("ws://127.0.0.1:5678/");
+        this.wsocket.addEventListener(
+            "message",
+            this.onMessageEvent.bind(this)
+        );
+        this.wsocket.addEventListener("open", this.onOpenEvent.bind(this));
+        this.wsocket.addEventListener("close", this.onCloseEvent.bind(this));
+    }
 
-function onCloseEvent(event) {
-    console.log("Closed connection to headtracker.");
-}
+    disconnect_websocket() {
+        console.log("Disconnecting from Headtracker...");
+        this.wsocket.close();
+        this.wsocket = undefined;
+    }
 
-export function init_websocket_client() {
-    connect_websocket();
+    toggleWebsocketConnection() {
+        if (this.wsocket === undefined) {
+            this.connect_websocket();
+        } else {
+            this.disconnect_websocket();
+        }
+    }
+
+    logReceivedData(data) {
+        if (this.DEBUG) {
+            console.log(
+                "Data received:",
+                data,
+                "Total number of received positions:",
+                this.counter
+            );
+        }
+    }
+
+    onOpenEvent(event) {
+        console.log("Successfully connected to headtracker.");
+    }
+
+    onCloseEvent(event) {
+        console.log("Closed connection to headtracker.");
+    }
 }
