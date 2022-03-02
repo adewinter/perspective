@@ -2,7 +2,7 @@ let wsocket;
 
 let counter = 0;
 
-const DEBUG = true;
+const DEBUG = false;
 let SHOULD_USE_RAW_POSITION = false;
 function onMessageEvent(event) {
     counter += 1;

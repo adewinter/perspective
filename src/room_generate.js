@@ -20,7 +20,6 @@ const TEXT_SIZE = 0.02;
 function loadFontFunctionWrapper() {
     return new Promise((resolve, reject) => {
         loader.load(font_path, (font_data) => {
-            console.log(font_data);
             font = font_data;
             resolve(font_data);
         });
@@ -93,11 +92,7 @@ async function create_display_axis(prefix, textColor) {
 
     const markers = new THREE.Group();
 
-    console.log("Loading fonts...", new Date());
     await loadFontFunctionWrapper();
-    console.log("Font loaded.", new Date());
-    console.log("TEXTCOLOR:", textColor);
-    console.log("PREFIX", prefix);
     const font_materials = [
         new THREE.MeshPhongMaterial({
             color: textColor ? textColor : 0xffffff,

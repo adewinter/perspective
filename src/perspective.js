@@ -229,7 +229,6 @@ let refMeshStartPosition;
 function createScene() {
     refMesh = createWorldWindow();
     // refMesh.position.set(-0.5, 0, 0.5);
-    // refMesh.position.z = 0.5;
     scene.add(refMesh);
 
     const room1 = roomGenerator.createRoomWithOrnaments(
@@ -239,7 +238,6 @@ function createScene() {
         5
     );
     room1.position.y -= sceneWindow.height / 2;
-    // room1.position.z += 0.5
 
     scene.add(room1);
 
@@ -286,7 +284,7 @@ function init() {
         HeadtrackingApp();
     }
 
-    // WebsocketClientApp.init_websocket_client();
+    WebsocketClientApp.connect_websocket();
 }
 
 function updateControls() {
@@ -364,12 +362,15 @@ function getHeadCoordsAndMoveCamera() {
     portalCamPosZEl.innerText = portalCamera.position.z.toFixed(4);
 }
 
-function updateRefMeshDimensions() {
+function updateRefMeshDimensionsAndMaterial() {
     refMesh.scale.x = sceneWindow.width / sceneWindowWidthInitial;
     refMesh.scale.y = sceneWindow.height / sceneWindowHeightInitial;
     refMesh.position.x = sceneWindow.x;
     refMesh.position.y = sceneWindow.y;
     refMesh.position.z = sceneWindow.z;
+
+    refMesh.material.transparent = sceneWindow.IS_REFMESH_TRANSPARENT;
+    refMesh.material.wireframe = !sceneWindow.IS_REFMESH_TRANSPARENT;
 }
 
 function animate() {
@@ -378,7 +379,7 @@ function animate() {
 
     getHeadCoordsAndMoveCamera();
 
-    updateRefMeshDimensions();
+    updateRefMeshDimensionsAndMaterial();
     renderPortal();
     renderer.render(
         scene,
