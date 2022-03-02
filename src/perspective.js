@@ -35,12 +35,15 @@ let refMeshTL, refMeshBL, refMeshBR
 const rendererWidth = document.body.clientWidth;
 const rendererHeight = document.documentElement.clientHeight;
 
-const sceneWindowWidthInitial = 1; //meters
-const sceneWindowHeightInitial = 1*(rendererHeight/rendererWidth); //meters
+const sceneWindowWidthInitial = 0.34; //meters
+const sceneWindowHeightInitial = 1*(rendererHeight/rendererWidth)*sceneWindowWidthInitial; //meters
 
 const sceneWindow = { //dimensions of our 'window into the world'
     width: sceneWindowWidthInitial,
-    height: sceneWindowHeightInitial
+    height: sceneWindowHeightInitial,
+    x: 0,
+    y: 0,
+    z: 0
 };
 
 // we will treat 1 ThreeJS/WebGL unit as 1 meter when working with x/y/z etc
@@ -48,10 +51,10 @@ let flagLookOnce = false;
 
 let gui;
 
-let portalCamOffset = {x:0, y:0, z:0, scaleX:1, scaleY:1, scaleZ:1, lockX: false, lockY: false, lockZ: false};
+let portalCamOffset = {x:0, y:0.1, z:0.0, scaleX:1, scaleY:-1, scaleZ:1, lockX: false, lockY: false, lockZ: false};
 
 let SHOULD_LAUNCH_HEADTRACKING = false;
-let USE_PORTAL_CAMERA_HELPER = false;
+let USE_PORTAL_CAMERA_HELPER = true;
 let IS_REFMESH_TRANSPARENT = true;
 let USE_MAIN_CAMERA_FOR_VIEW = false;
 
@@ -77,8 +80,15 @@ function createClocks() {
     clock = new THREE.Clock();
 }
 
+function toggleCamera() {
+    USE_MAIN_CAMERA_FOR_VIEW = !USE_MAIN_CAMERA_FOR_VIEW;
+}
+
 function createGUI() {
     gui = new GUI();
+    const viewFolder = gui.addFolder('View');
+    viewFolder.open();
+    viewFolder.add({toggleCamera:toggleCamera}, 'toggleCamera').name('Swap Between Main and Portal Camera');
     const websocketFolder = gui.addFolder('Websocket');
     websocketFolder.add({toggle:WebsocketClientApp.toggleWebsocketConnection}, 'toggle').name('Connect/Disconnect Headtracker');
     websocketFolder.open();
@@ -103,6 +113,9 @@ function createGUI() {
     const sceneWindowFolder = gui.addFolder('Scene Window Dimensions');
     sceneWindowFolder.add(sceneWindow, 'width', 0, 3.1);
     sceneWindowFolder.add(sceneWindow, 'height', 0, 3.1);
+    sceneWindowFolder.add(sceneWindow, 'x', -2, 2.0);
+    sceneWindowFolder.add(sceneWindow, 'y', -2, 2.0);
+    sceneWindowFolder.add(sceneWindow, 'z', -2, 2.0);
     sceneWindowFolder.open();
 }
 
@@ -115,7 +128,7 @@ function setupMainCameraControls() {
 
 
     cameraControls = new FlyControls( mainCamera, renderer.domElement );
-    cameraControls.movementSpeed = 25;
+    cameraControls.movementSpeed = 5;
     cameraControls.domElement = renderer.domElement;
     cameraControls.rollSpeed = Math.PI / 2;
     cameraControls.autoForward = false;
@@ -123,11 +136,12 @@ function setupMainCameraControls() {
 
 }
 
-function createCameras(target) {
-    mainCamera = new THREE.PerspectiveCamera( 45, rendererWidth / rendererHeight, 1, 100 );
-    portalCamera = new THREE.PerspectiveCamera( 45, sceneWindowWidthInitial/sceneWindowHeightInitial, 0.1, 500.0 );
+function createCameras() {
+    mainCamera = new THREE.PerspectiveCamera( 45, rendererWidth / rendererHeight, 0.01, 100 );
+    portalCamera = new THREE.PerspectiveCamera( 45, sceneWindowWidthInitial/sceneWindowHeightInitial, 0.01, 500.0 );
 
-    mainCamera.position.set( 0, 0, 1.5 );
+    mainCamera.position.set( -3, 3, 3.0 );
+    mainCamera.lookAt(portalCamera.position);
     scene.add(mainCamera);
 
     scene.add( portalCamera );
@@ -167,15 +181,15 @@ function vecToString(vec) {
 }
 
 
-
+let refMeshStartPosition;
 function createScene() {
     refMesh = createWorldWindow();
     // refMesh.position.set(-0.5, 0, 0.5);
     // refMesh.position.z = 0.5;
     scene.add(refMesh);
     
-    const room1 = roomGenerator.createRoomWithOrnaments(1, 1, 5, 5);
-    room1.position.y -= 0.5
+    const room1 = roomGenerator.createRoomWithOrnaments(sceneWindow.width, sceneWindow.height, sceneWindow.width*5, 5);
+    room1.position.y -= sceneWindow.height/2;
     // room1.position.z += 0.5
 
     scene.add(room1);
@@ -274,38 +288,22 @@ function renderPortal() {
     renderer.setRenderTarget( currentRenderTarget );
 }
 
-// window.foo = new THREE.Vector3(0.1, -0.3, -0.5);
-window.headPosition = { x: 0.009244461543858051, y: -0.6128315925598145, z: -0.28158923983573914 };
-// window.headPosition.y += 1;
-// window.headPosition.z += 1;
+
+window.headPosition = { x: 0.00, y: -0.00, z: 0.00 };
 function getHeadCoordsAndMoveCamera() {
 
-    //reset portalCamera position
-    let offset = new THREE.Vector3(0, 0, 1);
-    refMesh.localToWorld(offset);
-    portalCamera.position.copy(offset);
+    let camera_position = new THREE.Vector3(0, 0, 0);
 
-    let hp = window.headPosition;
-    // hp.x *= portalCamOffset.scaleX;
-    // hp.y *= portalCamOffset.scaleY;
-    // hp.z *= portalCamOffset.scaleZ;
+    // Treat GUI x,y,z values as offset values to be added to value provided by headtracker
+    camera_position.x = (window.headPosition.x * portalCamOffset.scaleX) + portalCamOffset.x
+    camera_position.y = (window.headPosition.y * portalCamOffset.scaleY) + portalCamOffset.y
+    camera_position.z = (window.headPosition.z * portalCamOffset.scaleZ) + portalCamOffset.z
 
-    if(!portalCamOffset.lockX) {
-        portalCamera.position.x += (+(hp.x * portalCamOffset.scaleX).toFixed(2));
-    }
+    //Figure out world coordinates of camera_position (which is a vector relative to the origin of refMesh)
+    refMesh.localToWorld(camera_position);
 
-    if(!portalCamOffset.lockY) {
-        portalCamera.position.y += (+(hp.y * -1 * portalCamOffset.scaleY).toFixed(2));
-    }
-
-    if(!portalCamOffset.lockZ) {
-        portalCamera.position.z += (+(hp.z * portalCamOffset.scaleZ).toFixed(2));
-    }
-    
-    //Debug device so we can use the GUI to shift the portal cam around a bit
-    portalCamera.position.x += portalCamOffset.x;
-    portalCamera.position.y += portalCamOffset.y;
-    portalCamera.position.z += portalCamOffset.z;
+    //Set the new position for the portalCamera
+    portalCamera.position.copy(camera_position);
 
     portalCamPosXEl.innerText = portalCamera.position.x.toFixed(4);
     portalCamPosYEl.innerText = portalCamera.position.y.toFixed(4);
@@ -315,6 +313,9 @@ function getHeadCoordsAndMoveCamera() {
 function updateRefMeshDimensions() {
     refMesh.scale.x = sceneWindow.width/sceneWindowWidthInitial;
     refMesh.scale.y = sceneWindow.height/sceneWindowHeightInitial;
+    refMesh.position.x = sceneWindow.x;
+    refMesh.position.y = sceneWindow.y;
+    refMesh.position.z = sceneWindow.z;
 }
 
 function animate() {

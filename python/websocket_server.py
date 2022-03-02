@@ -15,7 +15,7 @@ class WebsocketServer:
     def formatPosition(self, position):
         _position = [x / 100.0 for x in position]
 
-        return {"x": _position[0], "y": _position[1], "z": -1*_position[2]}
+        return {"x": _position[0], "y": _position[1], "z": _position[2]}
 
     async def send_position(self, websocket, path):
         print("In send_time loop...")
