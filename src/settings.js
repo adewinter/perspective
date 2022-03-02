@@ -4,6 +4,9 @@ const sceneWindowWidthInitial = 0.34; //meters
 const sceneWindowHeightInitial =
     1 * (rendererHeight / rendererWidth) * sceneWindowWidthInitial; //meters
 
+const LOGITECH_C720P_HORIZONTAL_FOV_DEGREES = 31.3;
+const LOGITECH_C720P_VERTICAL_FOV_DEGREES = 29.9;
+
 let settings = {
     DEBUG: false,
     rendererWidth: rendererWidth,
@@ -12,7 +15,6 @@ let settings = {
     portalHeight: 6.0,
     sceneWindowWidthInitial: sceneWindowWidthInitial,
     sceneWindowHeightInitial: sceneWindowHeightInitial,
-
     sceneWindow: {
         //dimensions of our 'window into the world'
         width: sceneWindowWidthInitial,
@@ -22,7 +24,6 @@ let settings = {
         z: 0,
         IS_REFMESH_TRANSPARENT: true,
     },
-
     portalCamOffset: {
         x: 0,
         y: 0.1,
@@ -34,12 +35,9 @@ let settings = {
         lockY: false,
         lockZ: false,
     },
-
     headtracking: {
         SHOULD_USE_RAW_POSITION: false,
     },
-
-    SHOULD_LAUNCH_HEADTRACKING: false,
     USE_PORTAL_CAMERA_HELPER: true,
     USE_MAIN_CAMERA_FOR_VIEW: false,
 };

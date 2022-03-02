@@ -1,4 +1,5 @@
 import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
+import Stats from "stats.js";
 
 export default class PerspectiveGUI {
     constructor(settings, websocketClient) {
@@ -48,10 +49,23 @@ export default class PerspectiveGUI {
         sceneWindowFolder.add(settings.sceneWindow, "y", -2, 2.0);
         sceneWindowFolder.add(settings.sceneWindow, "z", -2, 2.0);
         sceneWindowFolder.open();
+
+        this.stats = this.createStats();
     }
 
     toggleCamera() {
         this.settings.USE_MAIN_CAMERA_FOR_VIEW =
             !this.settings.USE_MAIN_CAMERA_FOR_VIEW;
+    }
+
+    createStats() {
+        const stats = new Stats();
+        stats.dom.id = "fps-stats";
+        document.getElementById("3dviewcontainer").appendChild(stats.dom);
+        return stats;
+    }
+
+    updateStats() {
+        this.stats.update();
     }
 }

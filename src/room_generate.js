@@ -131,7 +131,7 @@ async function create_display_axis(prefix, textColor) {
 export function createRoom(roomWidth, roomHeight, roomDepth) {
     const roomGroup = new THREE.Group();
 
-    // CREATE A FUCKING BOX AT ROOM ORIGIN
+    // CREATE A BOX AT ROOM ORIGIN
     // const boxGeo = new THREE.BoxGeometry(roomWidth, roomHeight, 0.05);
     // const boxMat = new THREE.MeshPhongMaterial( { color: 0xff0000 } );
     // const box = new THREE.Mesh( boxGeo, boxMat );
@@ -216,7 +216,7 @@ export function createRoom(roomWidth, roomHeight, roomDepth) {
     roomGroup.add(mainLight);
     const sphereSize = roomHeight / 10;
 
-    const otherWhiteLight = new THREE.PointLight(0xcccccc, 0.7, 0);
+    const otherWhiteLight = new THREE.PointLight(0xcccccc, 1, 0);
     otherWhiteLight.position.set(
         0,
         roomHeight / 2 + roomHeight / 2 - roomHeight / 10,
@@ -236,15 +236,6 @@ export function createRoom(roomWidth, roomHeight, roomDepth) {
         );
         roomGroup.add(pointLightHelper2);
     }
-    // const redLight = new THREE.PointLight( 0xff0000, 0.25, 10.0 );
-    // redLight.position.set( -roomWidth+(roomWidth/10), roomHeight/2, 0 );
-    // roomGroup.add( redLight );
-
-    // const blueLight = new THREE.PointLight( 0x7f7fff, 0.25, 10.0 );
-    // blueLight.position.set( roomWidth-(roomWidth/10), -roomHeight/2, 0 );
-    // roomGroup.add( blueLight );
-
-    // scene.add(roomGroup);
     return roomGroup;
 }
 
