@@ -132,12 +132,12 @@ export function createRoom(roomWidth, roomHeight, roomDepth) {
     const roomGroup = new THREE.Group();
 
     // CREATE A BOX AT ROOM ORIGIN
-    // const boxGeo = new THREE.BoxGeometry(roomWidth, roomHeight, 0.05);
-    // const boxMat = new THREE.MeshPhongMaterial( { color: 0xff0000 } );
-    // const box = new THREE.Mesh( boxGeo, boxMat );
-    // // box.position.copy(new THREE.Vector3(0,0,0));
-    // box.position.set(0,0,0);
-    // roomGroup.add(box);
+    const boxGeo = new THREE.BoxGeometry(roomWidth / 10, roomHeight / 10, 0.01);
+    const boxMat = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+    const box = new THREE.Mesh(boxGeo, boxMat);
+    // box.position.copy(new THREE.Vector3(0,0,0));
+    box.position.set(0, roomHeight / 2, -roomDepth);
+    roomGroup.add(box);
 
     const planeGeo = new THREE.PlaneGeometry(roomWidth, roomHeight);
     // walls
@@ -172,7 +172,7 @@ export function createRoom(roomWidth, roomHeight, roomDepth) {
     // planeFront.position.z = roomHeight/2;
     planeFront.position.y = roomWidth / 2;
     planeFront.rotateY(Math.PI);
-    roomGroup.add(planeFront);
+    // roomGroup.add(planeFront);
 
     const planeBack = new THREE.Mesh(
         planeGeo,
@@ -180,7 +180,7 @@ export function createRoom(roomWidth, roomHeight, roomDepth) {
     );
     planeBack.position.z = roomDepth / -1;
     planeBack.position.y = roomHeight / 2;
-    roomGroup.add(planeBack);
+    // roomGroup.add(planeBack);
 
     const geoLeftRight = new THREE.PlaneGeometry(roomDepth, roomHeight);
     const planeRight = new THREE.Mesh(

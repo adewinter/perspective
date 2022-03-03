@@ -63,9 +63,8 @@ function init() {
 
     cameras = new Cameras(settings, scene, renderer);
     cameras.portalCamera;
-
     websocketClient = new WebsocketClient(settings, pose);
-    perspectiveGUI = new PerspectiveGUI(settings, websocketClient);
+    perspectiveGUI = new PerspectiveGUI(settings, websocketClient, cameras);
 
     websocketClient.connect_websocket();
 }

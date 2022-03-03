@@ -2,8 +2,10 @@ import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 import Stats from "stats.js";
 
 export default class PerspectiveGUI {
-    constructor(settings, websocketClient) {
+    constructor(settings, websocketClient, cameras) {
         this.settings = settings;
+        this.websocketClient = websocketClient;
+        this.cameras = cameras;
         this.gui = new GUI();
 
         const viewFolder = this.gui.addFolder("View");
@@ -14,13 +16,13 @@ export default class PerspectiveGUI {
 
         const websocketFolder = this.gui.addFolder("Websocket");
         websocketFolder
-            .add(websocketClient, "toggleWebsocketConnection")
+            .add(this.websocketClient, "toggleWebsocketConnection")
             .name("Connect/Disconnect Headtracker");
         websocketFolder.open();
 
         const positionDataFolder = this.gui.addFolder("Position Data");
         positionDataFolder
-            .add(websocketClient, "toggleUseRawPosition")
+            .add(this.websocketClient, "toggleUseRawPosition")
             .name("Toggle Raw/Smooth data");
         positionDataFolder.open();
 
@@ -31,6 +33,9 @@ export default class PerspectiveGUI {
         perspFolder.add(settings.portalCamOffset, "x", -3.1, 3);
         perspFolder.add(settings.portalCamOffset, "y", -3.1, 3);
         perspFolder.add(settings.portalCamOffset, "z", -3.1, 3);
+        perspFolder
+            .add(this.cameras, "togglePortalCameraHelper")
+            .name("Toggle Camera Helper");
         perspFolder.open();
 
         const perspScaleFolder = perspFolder.addFolder(
@@ -45,7 +50,7 @@ export default class PerspectiveGUI {
         sceneWindowFolder.add(settings.sceneWindow, "IS_REFMESH_TRANSPARENT");
         sceneWindowFolder.add(settings.sceneWindow, "width", 0, 3.1);
         sceneWindowFolder.add(settings.sceneWindow, "height", 0, 3.1);
-        sceneWindowFolder.add(settings.sceneWindow, "x", -2, 2.0);
+        sceneWindowFolder.add(settings.sceneWindow, "x", -0.5, 0.5, 0.01);
         sceneWindowFolder.add(settings.sceneWindow, "y", -2, 2.0);
         sceneWindowFolder.add(settings.sceneWindow, "z", -2, 2.0);
         sceneWindowFolder.open();

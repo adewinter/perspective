@@ -1,14 +1,19 @@
-const rendererWidth = document.body.clientWidth;
-const rendererHeight = document.documentElement.clientHeight;
-const sceneWindowWidthInitial = 0.34; //meters
-const sceneWindowHeightInitial =
-    1 * (rendererHeight / rendererWidth) * sceneWindowWidthInitial; //meters
-
 const LOGITECH_C720P_HORIZONTAL_FOV_DEGREES = 31.3;
 const LOGITECH_C720P_VERTICAL_FOV_DEGREES = 29.9;
 
+const rendererWidth = document.body.clientWidth; //pixels
+const rendererHeight = document.documentElement.clientHeight; //pixels
+
+const SCREEN_HORIZONTAL_PIXELS_PER_METER = (80 / 1.85) * 100;
+const SCREEN_VERTICAL_PIXELS_PER_METER = (48 / 1.11) * 100;
+
+const sceneWindowWidthInitial =
+    rendererWidth / SCREEN_HORIZONTAL_PIXELS_PER_METER; //meters
+const sceneWindowHeightInitial =
+    rendererHeight / SCREEN_VERTICAL_PIXELS_PER_METER; //meters
+
 let settings = {
-    DEBUG: false,
+    DEBUG: true,
     rendererWidth: rendererWidth,
     rendererHeight: rendererHeight,
     portalWidth: 4.0,
@@ -27,10 +32,10 @@ let settings = {
     portalCamOffset: {
         x: 0,
         y: 0.1,
-        z: 0.0,
-        scaleX: 1,
-        scaleY: -1,
-        scaleZ: 1,
+        z: 0.3,
+        scaleX: -0.3,
+        scaleY: -0.3,
+        scaleZ: -0.3,
         lockX: false,
         lockY: false,
         lockZ: false,

@@ -27,7 +27,7 @@ export default class Cameras {
             100
         );
         this.portalCamera = new THREE.PerspectiveCamera(
-            45,
+            60,
             this.settings.sceneWindowWidthInitial /
                 this.settings.sceneWindowHeightInitial,
             0.01,
@@ -42,8 +42,14 @@ export default class Cameras {
 
         if (this.settings.USE_PORTAL_CAMERA_HELPER) {
             this.portalCameraHelper = new THREE.CameraHelper(this.portalCamera);
+            window.portalCameraHelper = this.portalCameraHelper;
             this.scene.add(this.portalCameraHelper);
         }
+    }
+
+    togglePortalCameraHelper() {
+        this.portalCameraHelper.material.visible =
+            !this.portalCameraHelper.material.visible;
     }
 
     setupMainCameraControls() {
