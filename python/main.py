@@ -1,5 +1,10 @@
+import os
+
+os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
+
 import asyncio
 import time
+import sys
 
 import cv2
 import websockets
@@ -10,7 +15,7 @@ from image_source import CameraImageSource, FakeCameraSource
 from position_calculator import PositionCalculator
 from websocket_server import WebsocketServer
 
-from settings import DEBUG
+from settings import DEBUG, CAPTURE_POSITION_DATA_FOR_ANALYSIS
 
 
 class FacePose:
@@ -25,13 +30,15 @@ class FacePose:
         self.rawPosition = (0, 0, 0)
         self.position = (0, 0, 0)
 
-        if DEBUG:
-            self.image_source = FakeCameraSource()
-        else:
-            self.image_source = CameraImageSource()
+        # if DEBUG:
+        #     self.image_source = FakeCameraSource()
+        # else:
+        #     self.image_source = CameraImageSource()
+        self.image_source = CameraImageSource()
         self.drawer = Drawer()
         self.face_detector = FaceDetector()
         self.position_calculator = PositionCalculator()
+        self.data_for_file = []
 
     def startFPSMeasure(self):
         self.new_frame_time = time.time()
@@ -59,6 +66,14 @@ class FacePose:
 
         self.drawer.drawTextCoordinates(self.rawPosition, self.position)
         self.drawer.drawSparklines(self.rawPosition[0], self.position[0])
+
+        if CAPTURE_POSITION_DATA_FOR_ANALYSIS:
+            if self.counter < 300:
+                self.data_for_file.append(f"{self.rawPosition[0]}\n")
+            else:
+                with open("data.txt", "w") as f:
+                    f.writelines(self.data_for_file)
+                sys.exit(0)
 
         eyePoints = self.position_calculator.smoothEyePositions(
             detection, image_height, image_width
@@ -100,7 +115,7 @@ class FacePose:
 
             self.drawer.showUI()
 
-            if cv2.waitKey(2) & 0xFF == 27:
+            if cv2.waitKey(1) & 0xFF == 27:
                 break
 
 

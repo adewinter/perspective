@@ -7,6 +7,8 @@ import mediapipe as mp
 import numpy as np
 
 from settings import DEBUG
+
+
 class Drawer:
     """
     Responsible for rendering the image from the ImageSource, FaceDetection details, other data, etc
@@ -51,12 +53,7 @@ class Drawer:
         textPosition = (5, 20)
         fontSize = 0.4
 
-        cvui.text(
-            self.CVUI_FRAME,
-            *textPosition,
-            stringToRender,
-            fontSize,
-        )
+        cvui.text(self.CVUI_FRAME, *textPosition, stringToRender, fontSize, 0x00FF00)
 
     def drawTextEyecoordinates(self, left_eye, right_eye):
         stringToRender = f"Left Eye Rel - X: {left_eye.x:.2f}, Y:{left_eye.y:.2f}"
@@ -95,16 +92,10 @@ class Drawer:
         self.sparkline_data_q2.append(dataPoint2)
 
         cvui.sparkline(
-            self.CVUI_FRAME, self.sparkline_data_q1, 0, 0, 600, 200, 0x00FF00
+            self.CVUI_FRAME, self.sparkline_data_q1, 0, 0, 600, 200, 0xFFFFFF
         )
         cvui.sparkline(
-            self.CVUI_FRAME,
-            self.sparkline_data_q2,
-            0,
-            0,
-            600,
-            200,
-            0xFFFFFF,
+            self.CVUI_FRAME, self.sparkline_data_q2, 0, 0, 600, 200, 0x00FF00
         )
 
     def drawCalulatedIPDText(self, virt_ipd):

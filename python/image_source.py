@@ -13,7 +13,9 @@ class ImageSource:
 
 class CameraImageSource(ImageSource):
     def __init__(self):
-        self.cap = cv2.VideoCapture(0, cv2.CAP_ANY)
+        print("Trying to initialize CV2 camera...")
+        self.cap = cv2.VideoCapture(0, cv2.CAP_MSMF)
+        print("Done initializing CV2 camera.")
         self.cap.set(cv2.CAP_PROP_FPS, 60)
 
     async def getImage(self):
@@ -25,12 +27,13 @@ class CameraImageSource(ImageSource):
     def close(self):
         self.cap.release()
 
+
 class FakeCameraSource(ImageSource):
     def __init__(self):
-        self.image = cv2.imread('../fake.png')
+        self.image = cv2.imread("../fake.png")
 
     async def getImage(self):
         return True, self.image.copy()
 
     def close(self):
-        spass
+        pass

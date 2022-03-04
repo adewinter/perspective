@@ -11,12 +11,14 @@ class PositionCalculator:
     RIGHT_EYE_INDEX = 1
     REAL_IPD = 6.5  # cm. Physical distance between my pupils
 
-    RELATIVE_EYE_POSITION_OFFSET = -0.5 # This is to ensure that relative coords origin is at center of image instead of top-left.
+    RELATIVE_EYE_POSITION_OFFSET = (
+        -0.5
+    )  # This is to ensure that relative coords origin is at center of image instead of top-left.
 
     def __init__(self):
-        self.xPositionQueue = deque([0] * 3, 3)
-        self.yPositionQueue = deque([0] * 3, 3)
-        self.zPositionQueue = deque([0] * 3, 3)
+        self.xPositionQueue = deque([0] * 10, 10)
+        self.yPositionQueue = deque([0] * 10, 10)
+        self.zPositionQueue = deque([0] * 10, 10)
 
         self.leftEyeXQueue = deque([], 3)
         self.leftEyeYQueue = deque([], 3)
@@ -98,21 +100,27 @@ class PositionCalculator:
         self.yPositionQueue.append(raw_y)
         self.zPositionQueue.append(raw_z)
 
-        return (
+        means = (
             mean(self.xPositionQueue),
             mean(self.yPositionQueue),
             mean(self.zPositionQueue),
         )
 
+        return [float(f"{x:.1f}") for x in means]
+
     def positionSmoothingFunc(self, q):
         return int(mean(q))
 
     def getRelativeEyePosition(self, detection):
-        left_eye_pt = detection.location_data.relative_keypoints[self.LEFT_EYE_INDEX].__deepcopy__()
+        left_eye_pt = detection.location_data.relative_keypoints[
+            self.LEFT_EYE_INDEX
+        ].__deepcopy__()
         left_eye_pt.x += self.RELATIVE_EYE_POSITION_OFFSET
         left_eye_pt.y += self.RELATIVE_EYE_POSITION_OFFSET
 
-        right_eye_pt = detection.location_data.relative_keypoints[self.RIGHT_EYE_INDEX].__deepcopy__()
+        right_eye_pt = detection.location_data.relative_keypoints[
+            self.RIGHT_EYE_INDEX
+        ].__deepcopy__()
         right_eye_pt.x += self.RELATIVE_EYE_POSITION_OFFSET
         right_eye_pt.y += self.RELATIVE_EYE_POSITION_OFFSET
 
@@ -130,4 +138,3 @@ class PositionCalculator:
         out = [self.positionSmoothingFunc(x) for x in self.allSmoothQs]
 
         return (out[0], out[1]), (out[2], out[3])
-
