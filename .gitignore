@@ -104,3 +104,7 @@ dist
 .tern-port
 
 *.pyc
+
+python/camera_tests.py
+python/cvui_bug.py
+python/data.txt
