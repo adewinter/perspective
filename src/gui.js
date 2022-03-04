@@ -36,6 +36,21 @@ export default class PerspectiveGUI {
         perspFolder
             .add(this.cameras, "togglePortalCameraHelper")
             .name("Toggle Camera Helper");
+
+        const frustumFolder = perspFolder.addFolder("Frustum");
+        window.cameras = cameras;
+        frustumFolder
+            .add(cameras.portalCamera, "near", 0.00001, 1.0, 0.001)
+            .onChange(this.cameras.updatePortalCameraHelper.bind(cameras));
+        frustumFolder
+            .add(cameras.portalCamera, "far", 0.1, 20, 0.1)
+            .onChange(this.cameras.updatePortalCameraHelper.bind(cameras));
+        frustumFolder
+            .add(cameras.portalCamera, "fov", 1, 180, 1)
+            .onChange(this.cameras.updatePortalCameraHelper.bind(cameras));
+        frustumFolder
+            .add(cameras.portalCamera, "aspect", 0.1, 4, 0.1)
+            .onChange(this.cameras.updatePortalCameraHelper.bind(cameras));
         perspFolder.open();
 
         const perspScaleFolder = perspFolder.addFolder(

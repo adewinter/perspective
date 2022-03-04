@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
+import { TeapotGeometry } from "three/examples/jsm/geometries/TeapotGeometry.js";
+
 const colorList = [
     0x922606, 0x69e216, 0xec2ea3, 0x60dcda, 0xd76a9a, 0x1521da, 0xdc3146,
     0xb69c83, 0x1e670a, 0xe2cc37,
@@ -28,7 +30,6 @@ function loadFontFunctionWrapper() {
 
 function createText(textString, prefix, materials) {
     const textToRender = prefix ? prefix + textString + "" : textString + "";
-    // console.log("Rednering", textString);
     const textGeometry = new TextGeometry(textToRender, {
         font: font,
         size: TEXT_SIZE,
@@ -180,7 +181,7 @@ export function createRoom(roomWidth, roomHeight, roomDepth) {
     );
     planeBack.position.z = roomDepth / -1;
     planeBack.position.y = roomHeight / 2;
-    // roomGroup.add(planeBack);
+    roomGroup.add(planeBack);
 
     const geoLeftRight = new THREE.PlaneGeometry(roomDepth, roomHeight);
     const planeRight = new THREE.Mesh(
@@ -273,13 +274,12 @@ export function createRoomWithOrnaments(
     const room = createRoom(roomWidth, roomHeight, roomDepth);
 
     const ornamentSize = (roomWidth / numberOfOrnaments).toFixed(5);
-
     let xPositionsAlreadySeen = [-1];
     let zPositionsAlreadySeen = [-1];
     let yPositionsAlreadySeen = [-1];
 
     for (let i = 0; i < numberOfOrnaments; i++) {
-        let ornament = createOrnament2(ornamentSize, roomDepth + roomHeight);
+        let ornament = createOrnament3(ornamentSize, roomDepth + roomHeight);
         let randX = getRandomPosition(
             xPositionsAlreadySeen,
             ornamentSize,
@@ -302,15 +302,15 @@ export function createRoomWithOrnaments(
         yPositionsAlreadySeen.push(randY);
 
         ornament.position.x = randX - roomWidth / 2 + ornamentSize / 2;
-        ornament.position.z = randZ - roomDepth + ornamentSize / 2 + roomHeight;
+        ornament.position.z = randZ - roomDepth + ornamentSize / 2; //+ roomHeight;
         ornament.position.y = randY;
 
         room.add(ornament);
     }
 
-    create_display_axis().then((y_axis) => {
-        room.add(y_axis);
-    });
+    // create_display_axis().then((y_axis) => {
+    //     room.add(y_axis);
+    // });
     create_display_axis().then((x_axis) => {
         x_axis.rotateX(-Math.PI / 2);
         x_axis.rotateZ(-Math.PI / 2);
@@ -407,6 +407,50 @@ function createOrnament2(ornamentSize, roomDepth) {
     torus.castShadow = true;
     // torus.position.y = ornamentSize/2;
     ornamentGroup.add(torus);
+
+    ornamentGroup.position.y += ornamentSize;
+
+    return ornamentGroup;
+}
+
+function createTeapot(ornamentSize) {
+    const material = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide });
+    const geometry = new TeapotGeometry(
+        ornamentSize / 5,
+        10, //segments
+        true, //should bottom be visible
+        false, //should lid be removed
+        true, //should body be visible
+        true, //should lid be fitted (leaving no gaps between lid and body)
+        false //Use original "warped" scale
+    );
+
+    return new THREE.Mesh(geometry, material);
+}
+
+function createOrnament3(ornamentSize, roomDepth) {
+    const ornamentGroup = new THREE.Group();
+
+    const boxGeo = new THREE.CircleGeometry(ornamentSize / 2, 32);
+    const boxMat = new THREE.MeshPhongMaterial({ color: getColor() });
+    const box = new THREE.Mesh(boxGeo, boxMat);
+    box.position.z = -ornamentSize / 2;
+    box.castShadow = true;
+    ornamentGroup.add(box);
+
+    const cylinderGeo = new THREE.CylinderGeometry(
+        ornamentSize / 20,
+        ornamentSize / 20,
+        roomDepth
+    );
+    const cylinderMat = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    const cylinder = new THREE.Mesh(cylinderGeo, cylinderMat);
+    cylinder.rotateX(Math.PI / 2);
+    cylinder.position.z = -roomDepth / 2 - ornamentSize / 2 - ornamentSize / 40;
+    ornamentGroup.add(cylinder);
+
+    const teapot = createTeapot(ornamentSize);
+    ornamentGroup.add(teapot);
 
     ornamentGroup.position.y += ornamentSize;
 

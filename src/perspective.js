@@ -66,6 +66,8 @@ function init() {
     websocketClient = new WebsocketClient(settings, pose);
     perspectiveGUI = new PerspectiveGUI(settings, websocketClient, cameras);
 
+    window.addEventListener("resize", onWindowResize);
+
     websocketClient.connect_websocket();
 }
 
@@ -144,6 +146,18 @@ function updateRefMeshDimensionsAndMaterial() {
 
     refMesh.material.transparent = settings.sceneWindow.IS_REFMESH_TRANSPARENT;
     refMesh.material.wireframe = !settings.sceneWindow.IS_REFMESH_TRANSPARENT;
+}
+
+function onWindowResize() {
+    const canvasWidth = window.innerWidth;
+    const canvasHeight = window.innerHeight;
+    settings.updateSettingsWithNewRendererDims(canvasWidth, canvasHeight);
+    renderer.setSize(settings.rendererWidth, settings.rendererHeight);
+    let camera = settings.USE_MAIN_CAMERA_FOR_VIEW
+        ? cameras.mainCamera
+        : cameras.portalCamera;
+    camera.aspect = settings.rendererWidth / settings.rendererHeight;
+    camera.updateProjectionMatrix();
 }
 
 function animate() {

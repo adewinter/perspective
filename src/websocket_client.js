@@ -34,10 +34,12 @@ export default class WebsocketClient {
     toggleUseRawPosition() {
         this.settings.headtracking.SHOULD_USE_RAW_POSITION =
             !this.settings.headtracking.SHOULD_USE_RAW_POSITION;
-        console.log(
-            "Should use raw position data set to:",
-            this.settings.headtracking.SHOULD_USE_RAW_POSITION
-        );
+        if (this.DEBUG) {
+            console.log(
+                "Should use raw position data set to:",
+                this.settings.headtracking.SHOULD_USE_RAW_POSITION
+            );
+        }
     }
 
     connect_websocket() {

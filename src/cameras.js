@@ -27,11 +27,11 @@ export default class Cameras {
             100
         );
         this.portalCamera = new THREE.PerspectiveCamera(
-            60,
+            45,
             this.settings.sceneWindowWidthInitial /
                 this.settings.sceneWindowHeightInitial,
-            0.01,
-            500.0
+            0.1,
+            10.0
         );
 
         this.mainCamera.position.set(-3, 3, 3.0);
@@ -48,8 +48,21 @@ export default class Cameras {
     }
 
     togglePortalCameraHelper() {
-        this.portalCameraHelper.material.visible =
-            !this.portalCameraHelper.material.visible;
+        if (this.portalCameraHelper !== undefined) {
+            this.portalCameraHelper.geometry.dispose();
+            this.scene.remove(this.portalCameraHelper);
+            this.portalCameraHelper = undefined;
+        } else {
+            this.portalCameraHelper = new THREE.CameraHelper(this.portalCamera);
+            window.portalCameraHelper = this.portalCameraHelper;
+            this.scene.add(this.portalCameraHelper);
+        }
+    }
+
+    updatePortalCameraHelper() {
+        //sorry for the hack job.
+        this.togglePortalCameraHelper();
+        this.togglePortalCameraHelper();
     }
 
     setupMainCameraControls() {
