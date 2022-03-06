@@ -36,17 +36,13 @@ let settings = {
     DEBUG: true,
     rendererWidth: rendererWidth,
     rendererHeight: rendererHeight,
-    // sceneWindowWidthInitial: sceneWindowWidthInitial,
-    // sceneWindowHeightInitial: sceneWindowHeightInitial,
     sceneWindow: {
-        //dimensions of our 'window into the world'
-        // width: sceneWindowWidthInitial,
-        // height: sceneWindowHeightInitial,
+        // dimensions of our 'window into the world'
         x: 0, //offset
         y: 2.3, //offset
         z: 5, //offset
-        rotateX: 0, //-Math.PI / 6, //offset
-        rotateY: 0, //Math.PI / 4, //offset
+        rotateX: 0, //offset
+        rotateY: 0, //offset
         rotateZ: 0, //offset
         IS_REFMESH_TRANSPARENT: true,
     },
