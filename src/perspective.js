@@ -1,13 +1,14 @@
 import * as THREE from "three";
 import * as CameraUtils from "three/examples/jsm/utils/CameraUtils.js";
 
-import settings from "./settings.js";
+import settings, * as CONSTANTS from "./settings.js";
 import Cameras from "./cameras.js";
 import PerspectiveGUI from "./gui.js";
 import * as roomGenerator from "./room_generate.js";
 import WebsocketClient from "./websocket_client.js";
+import EnvLittlestTokyo from "./env_littlest_tokyo.js";
 
-let cameras, scene, renderer, perspectiveGUI, websocketClient;
+let cameras, scene, renderer, perspectiveGUI, websocketClient, perspective_env;
 
 const pose = {
     position: { x: 0.0, y: -0.0, z: 0.0 },
@@ -40,10 +41,7 @@ function createWorldWindow() {
     return planeMesh;
 }
 
-function generateSceneEnvironment() {
-    refMesh = createWorldWindow();
-    scene.add(refMesh);
-
+function generateCalibrationRoom() {
     const room1 = roomGenerator.createRoomWithOrnaments(
         settings.sceneWindow.width,
         settings.sceneWindow.height,
@@ -54,12 +52,50 @@ function generateSceneEnvironment() {
 
     scene.add(room1);
 
-    return room1;
+    return;
+}
+
+function generateLittlestTokyoEnv() {
+    const littlest_tokyo = new EnvLittlestTokyo(renderer);
+    const width = settings.sceneWindow.width;
+    const height = settings.sceneWindow.height;
+    const depth = settings.sceneWindow.width;
+    const sceneToAdd = littlest_tokyo.generate_environment(
+        width,
+        height,
+        depth
+    );
+    // littlest_tokyo.model.rotateY(Math.PI / 3);
+    // littlest_tokyo.model.position.set(2, 3, 5);
+    scene = sceneToAdd;
+    window.scene = scene;
+    window.lt = littlest_tokyo;
+    return littlest_tokyo;
+}
+
+function generateSceneEnvironment() {
+    let output;
+    switch (settings.environment.current_environment) {
+        case CONSTANTS.CALIBRATION_ROOM:
+            output = generateCalibrationRoom();
+            break;
+
+        case CONSTANTS.LITTLEST_TOKYO:
+            output = generateLittlestTokyoEnv();
+            break;
+    }
+    return output;
 }
 
 function init() {
     initRendererAndScene();
-    generateSceneEnvironment();
+    perspective_env = generateSceneEnvironment();
+    refMesh = createWorldWindow();
+    scene.add(refMesh);
+
+    refMesh.rotateX(settings.sceneWindow.rotateX);
+    refMesh.rotateY(settings.sceneWindow.rotateY);
+    refMesh.rotateZ(settings.sceneWindow.rotateZ);
 
     cameras = new Cameras(settings, scene, renderer);
     cameras.portalCamera;
@@ -67,6 +103,11 @@ function init() {
     perspectiveGUI = new PerspectiveGUI(settings, websocketClient, cameras);
 
     window.addEventListener("resize", onWindowResize);
+
+    if (settings.DEBUG) {
+        window.refMesh = refMesh;
+        window.settings = settings;
+    }
 
     websocketClient.connect_websocket();
 }
@@ -158,6 +199,12 @@ function onWindowResize() {
         : cameras.portalCamera;
     camera.aspect = settings.rendererWidth / settings.rendererHeight;
     camera.updateProjectionMatrix();
+}
+
+function updateEnvironment() {
+    if (perspective_env) {
+        perspective_env.updateEnvironment();
+    }
 }
 
 function animate() {

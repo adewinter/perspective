@@ -7,6 +7,10 @@ const rendererHeight = document.documentElement.clientHeight; //pixels
 const SCREEN_HORIZONTAL_PIXELS_PER_METER = (80 / 1.85) * 100;
 const SCREEN_VERTICAL_PIXELS_PER_METER = (48 / 1.11) * 100;
 
+//environment enum
+export const CALIBRATION_ROOM = 0;
+export const LITTLEST_TOKYO = 1;
+
 function calculateSceneWindowDims(rendererWidth, rendererHeight) {
     let sceneWindowWidthInitial =
         rendererWidth / SCREEN_HORIZONTAL_PIXELS_PER_METER; //meters
@@ -38,9 +42,12 @@ let settings = {
         //dimensions of our 'window into the world'
         // width: sceneWindowWidthInitial,
         // height: sceneWindowHeightInitial,
-        x: 0,
-        y: 0,
-        z: 0,
+        x: 0, //offset
+        y: 2.3, //offset
+        z: 5, //offset
+        rotateX: 0, //-Math.PI / 6, //offset
+        rotateY: 0, //Math.PI / 4, //offset
+        rotateZ: 0, //offset
         IS_REFMESH_TRANSPARENT: true,
     },
     portalCamOffset: {
@@ -60,6 +67,9 @@ let settings = {
     USE_PORTAL_CAMERA_HELPER: true,
     USE_MAIN_CAMERA_FOR_VIEW: false,
     updateSettingsWithNewRendererDims: updateSettingsWithNewRendererDims,
+    environment: {
+        current_environment: LITTLEST_TOKYO,
+    },
 };
 
 settings.updateSettingsWithNewRendererDims(rendererWidth, rendererHeight);

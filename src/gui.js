@@ -62,9 +62,9 @@ export default class PerspectiveGUI {
         sceneWindowFolder.add(settings.sceneWindow, "IS_REFMESH_TRANSPARENT");
         sceneWindowFolder.add(settings.sceneWindow, "width", 0, 3.1);
         sceneWindowFolder.add(settings.sceneWindow, "height", 0, 3.1);
-        sceneWindowFolder.add(settings.sceneWindow, "x", -0.5, 0.5, 0.01);
-        sceneWindowFolder.add(settings.sceneWindow, "y", -2, 2.0);
-        sceneWindowFolder.add(settings.sceneWindow, "z", -2, 2.0);
+        sceneWindowFolder.add(settings.sceneWindow, "x", -5, 5, 0.1);
+        sceneWindowFolder.add(settings.sceneWindow, "y", -5, 5, 0.1);
+        sceneWindowFolder.add(settings.sceneWindow, "z", -5, 5, 0.1);
         sceneWindowFolder.open();
 
         this.stats = this.createStats();
