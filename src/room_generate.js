@@ -129,6 +129,25 @@ async function create_display_axis(prefix, textColor) {
     return axisGroup;
 }
 
+function createWallMesh(width, height) {
+    return new THREE.TextureLoader()
+        .loadAsync("/check.png")
+        .then(function (texture) {
+            const geometry = new THREE.PlaneGeometry(width, height);
+            const material = new THREE.MeshPhongMaterial({
+                side: THREE.DoubleSide,
+                // color: getColor(),
+                map: texture,
+            });
+            const wallMesh = new THREE.Mesh(geometry, material);
+
+            return wallMesh;
+        })
+        .catch((error) => {
+            console.error("PROBLEM", error);
+        });
+}
+
 export function createRoom(roomWidth, roomHeight, roomDepth) {
     const roomGroup = new THREE.Group();
 
@@ -140,72 +159,48 @@ export function createRoom(roomWidth, roomHeight, roomDepth) {
     box.position.set(0, roomHeight / 2, -roomDepth);
     roomGroup.add(box);
 
-    const planeGeo = new THREE.PlaneGeometry(roomWidth, roomHeight);
     // walls
-    const topGeo = new THREE.PlaneGeometry(roomWidth, roomDepth);
-    const planeTop = new THREE.Mesh(
-        topGeo,
-        new THREE.MeshPhongMaterial({
-            side: THREE.DoubleSide,
-            color: getColor(),
-        })
-    );
-    planeTop.position.y = roomHeight;
-    planeTop.position.z = -roomDepth / 2;
-    planeTop.rotateX(Math.PI / 2);
-    roomGroup.add(planeTop);
 
-    const planeBottom = new THREE.Mesh(
-        topGeo,
-        new THREE.MeshPhongMaterial({
-            side: THREE.DoubleSide,
-            color: getColor(),
-        })
-    );
-    planeBottom.rotateX(-Math.PI / 2);
-    planeBottom.position.z = -roomDepth / 2;
-    roomGroup.add(planeBottom);
+    createWallMesh(roomWidth, roomDepth).then(function (planeTop) {
+        planeTop.position.y = roomHeight;
+        planeTop.position.z = -roomDepth / 2;
+        planeTop.rotateX(Math.PI / 2);
+        roomGroup.add(planeTop);
+    });
 
-    const planeFront = new THREE.Mesh(
-        planeGeo,
-        new THREE.MeshPhongMaterial({ color: getColor() })
-    );
-    // planeFront.position.z = roomHeight/2;
-    planeFront.position.y = roomWidth / 2;
-    planeFront.rotateY(Math.PI);
-    // roomGroup.add(planeFront);
+    createWallMesh(roomWidth, roomDepth).then(function (planeBottom) {
+        planeBottom.rotateX(-Math.PI / 2);
+        planeBottom.position.z = -roomDepth / 2;
+        roomGroup.add(planeBottom);
+    });
 
-    const planeBack = new THREE.Mesh(
-        planeGeo,
-        new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, color: 0x000000 })
-    );
-    planeBack.position.z = roomDepth / -1;
-    planeBack.position.y = roomHeight / 2;
-    roomGroup.add(planeBack);
+    createWallMesh(roomWidth, roomHeight).then(function (planeFront) {
+        planeFront.position.y = roomWidth / 2;
+        planeFront.rotateY(Math.PI);
+        // roomGroup.add(planeFront);
+    });
 
-    const geoLeftRight = new THREE.PlaneGeometry(roomDepth, roomHeight);
-    const planeRight = new THREE.Mesh(
-        geoLeftRight,
-        new THREE.MeshPhongMaterial({
-            side: THREE.DoubleSide,
-            color: getColor(),
-        })
-    );
-    planeRight.position.x = roomWidth / 2;
-    planeRight.position.y = roomHeight / 2;
-    planeRight.position.z = -roomDepth / 2;
-    planeRight.rotateY(-Math.PI / 2);
-    roomGroup.add(planeRight);
+    createWallMesh(roomWidth, roomHeight).then(function (planeBack) {
+        planeBack.position.z = roomDepth / -1;
+        planeBack.position.y = roomHeight / 2;
+        roomGroup.add(planeBack);
+    });
 
-    const planeLeft = new THREE.Mesh(
-        geoLeftRight,
-        new THREE.MeshPhongMaterial({ color: getColor() })
-    );
-    planeLeft.position.x = roomWidth / -2;
-    planeLeft.position.y = roomHeight / 2;
-    planeLeft.position.z = -roomDepth / 2;
-    planeLeft.rotateY(Math.PI / 2);
-    roomGroup.add(planeLeft);
+    createWallMesh(roomDepth, roomHeight).then(function (planeRight) {
+        planeRight.position.x = roomWidth / 2;
+        planeRight.position.y = roomHeight / 2;
+        planeRight.position.z = -roomDepth / 2;
+        planeRight.rotateY(-Math.PI / 2);
+        roomGroup.add(planeRight);
+    });
+
+    createWallMesh(roomDepth, roomHeight).then(function (planeLeft) {
+        planeLeft.position.x = roomWidth / -2;
+        planeLeft.position.y = roomHeight / 2;
+        planeLeft.position.z = -roomDepth / 2;
+        planeLeft.rotateY(Math.PI / 2);
+        roomGroup.add(planeLeft);
+    });
 
     // lights
     const mainLight = new THREE.PointLight(0xffffff, 1 / 2, 0, 2);

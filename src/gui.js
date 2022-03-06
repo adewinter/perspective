@@ -27,12 +27,9 @@ export default class PerspectiveGUI {
         positionDataFolder.open();
 
         const perspFolder = this.gui.addFolder("Perspective Camera");
-        perspFolder.add(settings.portalCamOffset, "lockX");
-        perspFolder.add(settings.portalCamOffset, "lockY");
-        perspFolder.add(settings.portalCamOffset, "lockZ");
-        perspFolder.add(settings.portalCamOffset, "x", -3.1, 3);
-        perspFolder.add(settings.portalCamOffset, "y", -3.1, 3);
-        perspFolder.add(settings.portalCamOffset, "z", -3.1, 3);
+        perspFolder.add(settings.portalCamOffset, "x", -1, 1.0, 0.01);
+        perspFolder.add(settings.portalCamOffset, "y", -1, 1.0, 0.01);
+        perspFolder.add(settings.portalCamOffset, "z", -1, 1.0, 0.01);
         perspFolder
             .add(this.cameras, "togglePortalCameraHelper")
             .name("Toggle Camera Helper");
