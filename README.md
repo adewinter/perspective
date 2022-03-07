@@ -1,6 +1,6 @@
 # Perspective
 
-This project is heavily inspired by the [Head Tracking for Desktop VR](http://johnnylee.net/projects/wii/)[1] project by Johnny Chung Lee.  The ultimate purpose of this project is to render arbitrary 3D scenes and have a window-like perspective into these scenes.  When we make use of Off Axis projection and headtracking, we can give the viewer a true sense of depth and perspective, providing a "life like" window into these worlds.  Eventually this project will be combined with dedicated hardware (camera, screen, compute) to act as a portrait/work of art to be hung in the home.  As a viewer passes by the portrait they will be able to gaze into different fantastical worlds with the same sense of perspective as that provided by a regular window.  With the addition of realistic lighting (e.g. matching the color and intensity of the sun) it may be possible to truly give the sense that the room is attached to a wholly different location/reality via this portrait window, or simply but effectively combat Seasonal Affectivity Disorder (SAD).
+This project is heavily inspired by the [Head Tracking for Desktop VR](http://johnnylee.net/projects/wii/)[1] project by Johnny Chung Lee.  The ultimate purpose of this project is to render arbitrary 3D scenes and have a window-like perspective into these scenes.  When we make use of [Off Axis projection](#off-axis-projection) and headtracking, we can give the viewer a true sense of depth and perspective, providing a "life like" window into these worlds.  Eventually this project will be combined with dedicated hardware (camera, screen, compute) to act as a portrait/work of art to be hung in the home.  As a viewer passes by the portrait they will be able to gaze into different fantastical worlds with the same sense of perspective as that provided by a regular window.  With the addition of realistic lighting (e.g. matching the color and intensity of the sun) it may be possible to truly give the sense that the room is attached to a wholly different location/reality via this portrait window, or simply but effectively combat Seasonal Affectivity Disorder (SAD).
 
 
 Head pose detection and tracking is done via a webcam video feed by either [OpenFace](https://github.com/TadasBaltrusaitis/OpenFace) or by an [local implementation](https://github.com/adewinter/perspective/blob/main/python/face_detector.py), in this repo, of the [MediaPipe Face Detection](https://google.github.io/mediapipe/solutions/face_detection.html) library.  This tracking provides the 3d renderer with the viewers physical location in space relative to the camera.  The 3D renderer is done in javascript by a regular web browser, using the [three.js](https://threejs.org/) library.
@@ -53,7 +53,7 @@ python zeromq_openface.py
 ```
 This script is a simple bridge that transfers the data sent by Openface via zeromq to a websocket which is consumed by the client.
 
-### 3D Rendering and perspective
+### 3D Rendering and perspective - Javascript
 All the javascript code can be found in the `[src/](https://github.com/adewinter/perspective/tree/main/src)` folder but is served in a convenient way by Webpack from the root of this repo.  To start the webserver run:
 ```
 npm start run
