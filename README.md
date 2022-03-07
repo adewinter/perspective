@@ -43,13 +43,13 @@ python zeromq_openface.py
 The repo is divided into two main sections:
 
 ### Headtracking + Messaging server - Python.
-All python code is located in the `[python/](https://github.com/adewinter/perspective/tree/main/python)` folder.  The local implementation of the Mediapipe Face Detection algo can be launched by running `main.py`:
+All python code is located in the [python/](https://github.com/adewinter/perspective/tree/main/python) folder.  The local implementation of the Mediapipe Face Detection algo can be launched by running `main.py`:
 ```
 python main.py
 ```
-This will launch both the headtracker _and_ a websocket server responsible for communicating tracking data to the client (see `[python/websocket_server.py](https://github.com/adewinter/perspective/blob/main/python/websocket_server.py)`).
+This will launch both the headtracker _and_ a websocket server responsible for communicating tracking data to the client (see [python/websocket_server.py](https://github.com/adewinter/perspective/blob/main/python/websocket_server.py)).
 
-Alternatively, to use the OpenFace headtracking implementation follow the Usage instructions above and ensure that you are running `[python/zeromq_openface.py](https://github.com/adewinter/perspective/blob/main/python/zeromq_openface.py)`. 
+Alternatively, to use the OpenFace headtracking implementation follow the Usage instructions above and ensure that you are running [python/zeromq_openface.py](https://github.com/adewinter/perspective/blob/main/python/zeromq_openface.py). 
 ```python
 python zeromq_openface.py
 
@@ -57,7 +57,7 @@ python zeromq_openface.py
 This script is a simple bridge that transfers the data sent by Openface via zeromq to a websocket which is consumed by the client.
 
 ### 3D Rendering and perspective - Javascript
-All the javascript code can be found in the `[src/](https://github.com/adewinter/perspective/tree/main/src)` folder but is served in a convenient way by Webpack from the root of this repo.  To start the webserver run:
+All the javascript code can be found in the [src/](https://github.com/adewinter/perspective/tree/main/src) folder but is served in a convenient way by Webpack from the root of this repo.  To start the webserver run:
 ```
 npm start run
 
