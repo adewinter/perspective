@@ -65,7 +65,7 @@ npm start run
 
 From the repo root.  Then launch your broser and go to [http://localhost:8080](http://localhost:8080).
 
-This code instantiates a camera that is responsible for the Off Axis Projection rendering that is the root of the project (see below for more info). The camera position is determined by the data being reported by the headtracker (which comes in via a [websocket client](https://github.com/adewinter/perspective/blob/main/src/websocket_client.js)).  A environment is rendered by the threejs library, to give you something to actually look at.  The heavy lifting for the environment generation is done in `[room_generate.js](https://github.com/adewinter/perspective/blob/main/src/room_generate.js)` if you are looking at the `[CALIBRATION_ROOM](https://github.com/adewinter/perspective/blob/main/src/settings.js#L11)` or in [env_littlest_toky.js](https://github.com/adewinter/perspective/blob/main/src/env_littlest_tokyo.js) if you're viewing that 3d scene instead.
+This code instantiates a camera that is responsible for the Off Axis Projection rendering that is the root of the project (see below for more info). The camera position is determined by the data being reported by the headtracker (which comes in via a [websocket client](https://github.com/adewinter/perspective/blob/main/src/websocket_client.js)).  A environment is rendered by the threejs library, to give you something to actually look at.  The heavy lifting for the environment generation is done in [room_generate.js](https://github.com/adewinter/perspective/blob/main/src/room_generate.js) if you are looking at the [CALIBRATION_ROOM](https://github.com/adewinter/perspective/blob/main/src/settings.js#L11) or in [env_littlest_toky.js](https://github.com/adewinter/perspective/blob/main/src/env_littlest_tokyo.js) if you're viewing that 3d scene instead.
 
 ### General debugging/settings
 For the javascript side it is important to be aware of `src/settings.js`.  This file contains several tweakable values that influence what the environment looks like and how the camera behaves (in conjunction with the values you can tweak in the gui).
@@ -78,3 +78,12 @@ This is the heart of the project and is what allows the "depth effect" to occur 
 
 
 [1] [Head Tracking for Desktop VR video](https://www.youtube.com/watch?v=Jd3-eiid-Uw)
+
+
+
+# Dev Log
+
+## Initial Development
+Initially I tried to rapidly prototype and experimented with a couple of different face detection mediapipe algorithms and running it all in the browser:
+
+![Work in Progress shot #1](workinprogress1.png)
