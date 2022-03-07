@@ -38,9 +38,12 @@ let settings = {
     rendererHeight: rendererHeight,
     sceneWindow: {
         // dimensions of our 'window into the world'
+        // x: 0, //offset
+        // y: 2.3, //offset
+        // z: 5, //offset
         x: 0, //offset
-        y: 2.3, //offset
-        z: 5, //offset
+        y: 0, //offset
+        z: 0, //offset
         rotateX: 0, //offset
         rotateY: 0, //offset
         rotateZ: 0, //offset
@@ -60,11 +63,12 @@ let settings = {
     headtracking: {
         SHOULD_USE_RAW_POSITION: false,
     },
-    USE_PORTAL_CAMERA_HELPER: true,
+    USE_PORTAL_CAMERA_HELPER: false,
     USE_MAIN_CAMERA_FOR_VIEW: false,
     updateSettingsWithNewRendererDims: updateSettingsWithNewRendererDims,
     environment: {
-        current_environment: LITTLEST_TOKYO,
+        // current_environment: LITTLEST_TOKYO,
+        current_environment: CALIBRATION_ROOM
     },
 };
 
