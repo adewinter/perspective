@@ -87,3 +87,14 @@ This is the heart of the project and is what allows the "depth effect" to occur 
 Initially I tried to rapidly prototype and experimented with a couple of different face detection mediapipe algorithms and running it all in the browser:
 
 ![Work in Progress shot #1](workinprogress1.png)
+
+The proof of concept worked in the sense that I was able to get physical XYZ coordinates from an image detection algorithm and translate that into a 3d rendered scene.  However, the algorithm performance was shaky both in the sense of performance (FPS) but also literally: when keeping my head motionless the algorithm would still rapidly jitter the final XYZ coordinates (sometimes many centimeteres change in location between individual frames).  In the case of BlazePose, while it was initially convenient that it provided both XY and Z coordinates right out of the box (as opposed to just flat XY pixel locations like most other algorithms), it turned out the estimate for Z was very very rough and often inaccurate.  After experimenting with a number of different face detection algorithms, some ML/Neural Network based and others old school OpenCV/Haar Cascade it became clear that estimating depth/Z coordinates by measuring width of the bounding box of the face, or alternatively the Inter Pupillary Distance(IPD), would be superior and provide a better and smoother estimate.
+
+This experimentation with different algorithms eventually lead to running things in python:
+![Work in Progresss shot #2](workinprogress2.png)
+
+and the proof that it was a lot more performant than running everything in the same thread in the browser.  Not exactly shocking or unexpected but still a good outcome.
+
+Finally, I came across OpenFace and was able to run it on my local machine without too much fuss.  Performance of their algorithm and implementation with respect to tracking overall head pose was _far far far_ superior to anything I could knock together.  Thus, I turned my attention to figuring out how to get data out of that platform into my project.  Luckily, OpenFace dumps data out to a ZeroMQ channel/topic so I was able to knock together a bridge between that and my existing websocket server/client.  
+
+Overall, while I'm happy with the OpenFace performance and think it's pretty close to *state of the art*, I'm starting to suspect that *state of the art* when it comes to webcam face tracking is still not quite **good enough** to really give a seamless experience when it comes to perspective projection of the kind that I want.  There might be some more tricks that could help (calibrating various values, making sure the viewer is far enough away from the camera/screen) but I'm not sure how far that will go to help the situation.  I'll keep polishing away at it and hopefully hit a happy medium.
