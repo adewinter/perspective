@@ -7,13 +7,24 @@ Head pose detection and tracking is done via a webcam video feed by either [Open
 
 ## Install
 
+### Requirements
+* Python 3.7+
+* [pipenv](https://pipenv.pypa.io/en/latest/install/)
+* Nodejs 
+
+### Instructions
 *Note:* Only tested on Windows 10 so far, but should work on Mac and Linux, as the libraries and packages are fairly standard.
+
+* [Install pipenv](https://pipenv.pypa.io/en/latest/install/) if you haven't already:
+```bash
+pip install --user pipenv
+```
 
 * clone this repo: https://github.com/adewinter/perspective
 in the root repo, from the command line run:
-```
+```bash
 npm install
-pip install opencv cvui mediapipe zmq
+pipenv install
 ```
 
 * Install OpenFace: https://github.com/TadasBaltrusaitis/OpenFace/wiki/Windows-Installation
@@ -25,14 +36,15 @@ pip install opencv cvui mediapipe zmq
 * Run `HeadPoseLive.exe`, located in the OpenFace install directory
 * In a new terminal, go to where you cloned this perspective repo in step 1
 * Run
-```
-npm run start
+```bash
+npm run serve
 ```
 
-* In another terminal, go to the perspective repo -> change directory to the `python/` sub-folder
+* In another terminal, go to the perspective repo
 * then run
-```
-python zeromq_openface.py
+```bash
+pipenv shell
+python python/zeromq_openface.py
 ```
 
 * Finally, open your browser and navigate to [http://localhost:8080](http://localhost:8080).
@@ -43,8 +55,8 @@ python zeromq_openface.py
 The repo is divided into two main sections:
 
 ### Headtracking + Messaging server - Python.
-All python code is located in the [python/](https://github.com/adewinter/perspective/tree/main/python) folder.  The local implementation of the Mediapipe Face Detection algo can be launched by running `main.py`:
-```
+All python code is located in the [python/](https://github.com/adewinter/perspective/tree/main/python) folder.  The local implementation of the Mediapipe Face Detection algo can be launched by running `main.py` (make sure you are in a pipenv shell by running `pipenv shell` first!):
+```bash
 python main.py
 ```
 This will launch both the headtracker _and_ a websocket server responsible for communicating tracking data to the client (see [python/websocket_server.py](https://github.com/adewinter/perspective/blob/main/python/websocket_server.py)).

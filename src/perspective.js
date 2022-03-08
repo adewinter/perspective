@@ -2,13 +2,14 @@ import * as THREE from "three";
 import * as CameraUtils from "three/examples/jsm/utils/CameraUtils.js";
 
 import settings, * as CONSTANTS from "./settings.js";
-import Cameras from "./cameras.js";
 import PerspectiveGUI from "./gui.js";
-import * as roomGenerator from "./room_generate.js";
+import EnvCalibrationRoom, * as roomGenerator from "./room_generate.js";
 import WebsocketClient from "./websocket_client.js";
 import EnvLittlestTokyo from "./env_littlest_tokyo.js";
 
-let cameras, scene, renderer, perspectiveGUI, websocketClient, perspective_env;
+let renderer, perspectiveGUI, websocketClient;
+
+let initialized_environments = {};
 
 const pose = {
     position: { x: 0.0, y: -0.0, z: 0.0 },
@@ -17,92 +18,39 @@ const pose = {
 
 let refMesh;
 
-function initRendererAndScene() {
+function initRenderer() {
     const container = document.getElementById("3dviewcontainer");
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(settings.rendererWidth, settings.rendererHeight);
     container.appendChild(renderer.domElement);
     renderer.localClippingEnabled = true;
-    scene = new THREE.Scene();
 }
 
-function createWorldWindow() {
-    const planeGeo = new THREE.PlaneGeometry(
-        settings.sceneWindow.width,
-        settings.sceneWindow.height
-    );
-    const planeMat = new THREE.MeshBasicMaterial({
-        opacity: 0.0,
-        transparent: settings.sceneWindow.IS_REFMESH_TRANSPARENT,
-        wireframe: !settings.sceneWindow.IS_REFMESH_TRANSPARENT,
-    });
-    const planeMesh = new THREE.Mesh(planeGeo, planeMat);
-    return planeMesh;
-}
+function getCurrentEnvironment() {
+    let current_env_name = settings.environment.current_environment;
+    let current_env_class =
+        settings.environment.available_environments[current_env_name];
+    let has_env_been_initialized =
+        initialized_environments[current_env_name] !== undefined;
 
-function generateCalibrationRoom() {
-    const room1 = roomGenerator.createRoomWithOrnaments(
-        settings.sceneWindow.width,
-        settings.sceneWindow.height,
-        settings.sceneWindow.width,
-        5
-    );
-    room1.position.y -= settings.sceneWindow.height / 2;
-
-    scene.add(room1);
-
-    return;
-}
-
-function generateLittlestTokyoEnv() {
-    const littlest_tokyo = new EnvLittlestTokyo(renderer);
-    const width = settings.sceneWindow.width;
-    const height = settings.sceneWindow.height;
-    const depth = settings.sceneWindow.width;
-    const sceneToAdd = littlest_tokyo.generate_environment(
-        width,
-        height,
-        depth
-    );
-    // littlest_tokyo.model.rotateY(Math.PI / 3);
-    // littlest_tokyo.model.position.set(2, 3, 5);
-    scene = sceneToAdd;
-    window.scene = scene;
-    window.lt = littlest_tokyo;
-    return littlest_tokyo;
-}
-
-function generateSceneEnvironment() {
-    let output;
-    switch (settings.environment.current_environment) {
-        case CONSTANTS.CALIBRATION_ROOM:
-            output = generateCalibrationRoom();
-            break;
-
-        case CONSTANTS.LITTLEST_TOKYO:
-            output = generateLittlestTokyoEnv();
-            break;
+    if (has_env_been_initialized) {
+        return initialized_environments[current_env_name];
+    } else {
+        let new_env = new current_env_class(renderer, settings);
+        new_env.generate();
+        initialized_environments[current_env_name] = new_env;
+        return new_env;
     }
-    return output;
 }
 
 function init() {
-    initRendererAndScene();
-    perspective_env = generateSceneEnvironment();
-    refMesh = createWorldWindow();
-    scene.add(refMesh);
+    initRenderer();
+    let current_environment = getCurrentEnvironment();
+    refMesh = current_environment.worldWindow;
 
-    refMesh.rotateX(settings.sceneWindow.rotateX);
-    refMesh.rotateY(settings.sceneWindow.rotateY);
-    refMesh.rotateZ(settings.sceneWindow.rotateZ);
-
-    cameras = new Cameras(settings, scene, renderer);
-    cameras.portalCamera;
     websocketClient = new WebsocketClient(settings, pose);
-    perspectiveGUI = new PerspectiveGUI(settings, websocketClient, cameras);
-
-    window.addEventListener("resize", onWindowResize);
+    perspectiveGUI = new PerspectiveGUI(settings, websocketClient);
 
     if (settings.DEBUG) {
         window.refMesh = refMesh;
@@ -141,7 +89,7 @@ function updatePortalCameraPerspective() {
 
     // render the portal effect
     CameraUtils.frameCorners(
-        cameras.portalCamera,
+        getCameras().portalCamera,
         refMeshBottomLeft,
         refMeshBottomRight,
         refMeshTopLeft,
@@ -171,9 +119,9 @@ function getHeadCoordsAndMoveCamera() {
     //(which is a vector relative to the origin of refMesh)
     refMesh.localToWorld(camera_position);
 
-    //Set the new position for the cameras.portalCamera
-    cameras.portalCamera.position.copy(camera_position);
-    cameras.updateUIWithCameraPositions();
+    //Set the new position for the portalCamera
+    getCameras().portalCamera.position.copy(camera_position);
+    getCameras().updateUIWithCameraPositions();
 }
 
 function updateRefMeshDimensionsAndMaterial() {
@@ -189,39 +137,29 @@ function updateRefMeshDimensionsAndMaterial() {
     refMesh.material.wireframe = !settings.sceneWindow.IS_REFMESH_TRANSPARENT;
 }
 
-function onWindowResize() {
-    const canvasWidth = window.innerWidth;
-    const canvasHeight = window.innerHeight;
-    settings.updateSettingsWithNewRendererDims(canvasWidth, canvasHeight);
-    renderer.setSize(settings.rendererWidth, settings.rendererHeight);
-    let camera = settings.USE_MAIN_CAMERA_FOR_VIEW
-        ? cameras.mainCamera
-        : cameras.portalCamera;
-    camera.aspect = settings.rendererWidth / settings.rendererHeight;
-    camera.updateProjectionMatrix();
+function animateEnvironment() {
+    getCurrentEnvironment().animateEnvironment();
 }
 
-function updateEnvironment() {
-    if (perspective_env) {
-        perspective_env.updateEnvironment();
-    }
+function getCameras() {
+    return getCurrentEnvironment().cameras;
 }
 
 function animate() {
     requestAnimationFrame(animate);
-    cameras.updateControls();
 
     getHeadCoordsAndMoveCamera();
 
     updateRefMeshDimensionsAndMaterial();
     updatePortalCameraPerspective();
+    animateEnvironment();
 
     //Choose which camera to use
     renderer.render(
-        scene,
+        getCurrentEnvironment().scene,
         settings.USE_MAIN_CAMERA_FOR_VIEW
-            ? cameras.mainCamera
-            : cameras.portalCamera
+            ? getCameras().mainCamera
+            : getCameras().portalCamera
     );
 
     //update metrics like FPS

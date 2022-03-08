@@ -16,9 +16,9 @@ class CameraImageSource(ImageSource):
         print("Trying to initialize CV2 camera...")
         self.cap = cv2.VideoCapture(0, cv2.CAP_MSMF)
         print("Done initializing CV2 camera.")
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-        self.cap.set(cv2.CAP_PROP_FPS, 90)
+        # self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+        # self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+        self.cap.set(cv2.CAP_PROP_FPS, 60)
 
     async def getImage(self):
         success, image = self.cap.read()

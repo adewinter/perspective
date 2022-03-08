@@ -3,6 +3,8 @@ import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import { TeapotGeometry } from "three/examples/jsm/geometries/TeapotGeometry.js";
 
+import GenericEnv from "./env_generic.js";
+
 const colorList = [
     0x922606, 0x69e216, 0xec2ea3, 0x60dcda, 0xd76a9a, 0x1521da, 0xdc3146,
     0xb69c83, 0x1e670a, 0xe2cc37,
@@ -16,6 +18,32 @@ const font_path = "/helvetiker.typeface.json";
 let font;
 
 const TEXT_SIZE = 0.02;
+
+export default class CalibrationRoomEnv extends GenericEnv {
+    constructor(renderer, settings) {
+        super(renderer, settings);
+    }
+
+    generate_environment(env_width, env_height, env_depth) {
+        super.generate_environment(env_width, env_height, env_depth);
+        this.num_ornaments = 5;
+        this.room = createRoomWithOrnaments(
+            env_width,
+            env_height,
+            env_depth,
+            this.num_ornaments
+        );
+        this.scene.add(this.room);
+        return this.scene;
+    }
+
+    getInitialPortalPose() {
+        const x = 0;
+        const y = this.env_height / 2;
+        const z = 0;
+        return [x, y, z, 0, 0, 0];
+    }
+}
 
 // myFunction wraps the above API call into a Promise
 // and handles the callbacks with resolve and reject

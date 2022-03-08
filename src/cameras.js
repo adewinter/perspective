@@ -47,22 +47,28 @@ export default class Cameras {
         }
     }
 
-    togglePortalCameraHelper() {
-        if (this.portalCameraHelper !== undefined) {
-            this.portalCameraHelper.geometry.dispose();
-            this.scene.remove(this.portalCameraHelper);
-            this.portalCameraHelper = undefined;
-        } else {
+    addPortalCameraHelper() {
+        if (this.portalCameraHelper === undefined) {
             this.portalCameraHelper = new THREE.CameraHelper(this.portalCamera);
             window.portalCameraHelper = this.portalCameraHelper;
             this.scene.add(this.portalCameraHelper);
         }
     }
 
+    removePortalCameraHelper() {
+        if (this.portalCameraHelper !== undefined) {
+            this.portalCameraHelper.geometry.dispose();
+            this.scene.remove(this.portalCameraHelper);
+            this.portalCameraHelper = undefined;
+        }
+    }
+
     updatePortalCameraHelper() {
-        //sorry for the hack job.
-        this.togglePortalCameraHelper();
-        this.togglePortalCameraHelper();
+        if (this.settings.USE_PORTAL_CAMERA_HELPER) {
+            this.addPortalCameraHelper();
+        } else {
+            this.removePortalCameraHelper();
+        }
     }
 
     setupMainCameraControls() {
@@ -89,5 +95,10 @@ export default class Cameras {
     updateControls() {
         const delta = this.clock.getDelta();
         this.cameraControls.update(delta);
+    }
+
+    updateCameras() {
+        this.updateControls();
+        this.updatePortalCameraHelper();
     }
 }

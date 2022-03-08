@@ -1,3 +1,6 @@
+import EnvCalibrationRoom, * as roomGenerator from "./room_generate.js";
+import EnvLittlestTokyo from "./env_littlest_tokyo.js";
+
 const LOGITECH_C720P_HORIZONTAL_FOV_DEGREES = 31.3;
 const LOGITECH_C720P_VERTICAL_FOV_DEGREES = 29.9;
 
@@ -6,10 +9,6 @@ const rendererHeight = document.documentElement.clientHeight; //pixels
 
 const SCREEN_HORIZONTAL_PIXELS_PER_METER = (80 / 1.85) * 100;
 const SCREEN_VERTICAL_PIXELS_PER_METER = (48 / 1.11) * 100;
-
-//environment enum
-export const CALIBRATION_ROOM = 0;
-export const LITTLEST_TOKYO = 1;
 
 function calculateSceneWindowDims(rendererWidth, rendererHeight) {
     let sceneWindowWidthInitial =
@@ -51,7 +50,7 @@ let settings = {
     },
     portalCamOffset: {
         x: 0,
-        y: 0.14,
+        y: 0,
         z: 0.2257,
         scaleX: -1.476,
         scaleY: -1.086,
@@ -67,8 +66,11 @@ let settings = {
     USE_MAIN_CAMERA_FOR_VIEW: false,
     updateSettingsWithNewRendererDims: updateSettingsWithNewRendererDims,
     environment: {
-        // current_environment: LITTLEST_TOKYO,
-        current_environment: CALIBRATION_ROOM
+        current_environment: "Calibration Room",
+        available_environments: {
+            "Calibration Room": EnvCalibrationRoom,
+            "Littlest Tokyo": EnvLittlestTokyo,
+        },
     },
 };
 

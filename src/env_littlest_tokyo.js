@@ -5,30 +5,24 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 
-export default class PerspectiveEnv {
+import GenericEnv from "./env_generic.js";
+
+export default class PerspectiveEnv extends GenericEnv {
     constructor(renderer) {
+        super(renderer);
         this.mixer = undefined;
         this.dracoLoader = new DRACOLoader();
         this.dracoLoader.setDecoderPath("/libs/draco/gltf/");
         this.scene = new THREE.Scene();
-        this.renderer = renderer;
         this.loader = new GLTFLoader();
         this.loader.setDRACOLoader(this.dracoLoader);
         this.clock = new THREE.Clock();
     }
 
-    // const clock = new THREE.Clock();
-    // const container = document.getElementById( 'container' );
-
-    updateEnvironment() {
+    animateEnvironment() {
+        super.animateEnvironment();
         const delta = this.clock.getDelta();
         this.mixer.update(delta);
-    }
-
-    onProgressLoad() {}
-
-    onErrorLoad(error) {
-        console.error(error);
     }
 
     onModelLoad(gltf) {
@@ -42,6 +36,7 @@ export default class PerspectiveEnv {
     }
 
     generate_environment(env_width, env_height, env_depth) {
+        super.generate_environment(env_width, env_height, env_depth);
         const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
         this.scene.background = new THREE.Color(0xbfe3dd);
         this.scene.environment = pmremGenerator.fromScene(

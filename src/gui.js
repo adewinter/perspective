@@ -2,10 +2,9 @@ import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 import Stats from "stats.js";
 
 export default class PerspectiveGUI {
-    constructor(settings, websocketClient, cameras) {
+    constructor(settings, websocketClient) {
         this.settings = settings;
         this.websocketClient = websocketClient;
-        this.cameras = cameras;
         this.gui = new GUI();
 
         const viewFolder = this.gui.addFolder("View");
@@ -31,23 +30,9 @@ export default class PerspectiveGUI {
         perspFolder.add(settings.portalCamOffset, "y", -1, 1.0, 0.01);
         perspFolder.add(settings.portalCamOffset, "z", -1, 1.0, 0.01);
         perspFolder
-            .add(this.cameras, "togglePortalCameraHelper")
-            .name("Toggle Camera Helper");
+            .add(settings, "USE_PORTAL_CAMERA_HELPER")
+            .name("Should Use Portal Camera Helper");
 
-        const frustumFolder = perspFolder.addFolder("Frustum");
-        window.cameras = cameras;
-        frustumFolder
-            .add(cameras.portalCamera, "near", 0.00001, 1.0, 0.001)
-            .onChange(this.cameras.updatePortalCameraHelper.bind(cameras));
-        frustumFolder
-            .add(cameras.portalCamera, "far", 0.1, 20, 0.1)
-            .onChange(this.cameras.updatePortalCameraHelper.bind(cameras));
-        frustumFolder
-            .add(cameras.portalCamera, "fov", 1, 180, 1)
-            .onChange(this.cameras.updatePortalCameraHelper.bind(cameras));
-        frustumFolder
-            .add(cameras.portalCamera, "aspect", 0.1, 4, 0.1)
-            .onChange(this.cameras.updatePortalCameraHelper.bind(cameras));
         perspFolder.open();
 
         const perspScaleFolder = perspFolder.addFolder(
