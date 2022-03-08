@@ -6,7 +6,7 @@ export default class GenericEnv {
         this.settings = settings;
         this.renderer = renderer;
         this.worldWindow = this.createWorldWindow();
-        this.setWorldWindowInitialPose();
+
         this.scene = new THREE.Scene();
         this.scene.add(this.worldWindow);
         this.cameras = new Cameras(settings, this.scene, renderer);
@@ -44,6 +44,7 @@ export default class GenericEnv {
         this.env_width = env_width;
         this.env_height = env_height;
         this.env_depth = env_depth;
+        this.setWorldWindowInitialPose();
     }
 
     getInitialPortalPose() {

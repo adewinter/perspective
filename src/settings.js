@@ -46,7 +46,7 @@ let settings = {
         rotateX: 0, //offset
         rotateY: 0, //offset
         rotateZ: 0, //offset
-        IS_REFMESH_TRANSPARENT: true,
+        IS_REFMESH_TRANSPARENT: false,
     },
     portalCamOffset: {
         x: 0,
@@ -62,7 +62,7 @@ let settings = {
     headtracking: {
         SHOULD_USE_RAW_POSITION: false,
     },
-    USE_PORTAL_CAMERA_HELPER: false,
+    USE_PORTAL_CAMERA_HELPER: true,
     USE_MAIN_CAMERA_FOR_VIEW: false,
     updateSettingsWithNewRendererDims: updateSettingsWithNewRendererDims,
     environment: {

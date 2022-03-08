@@ -24,8 +24,8 @@ export default class CalibrationRoomEnv extends GenericEnv {
         super(renderer, settings);
     }
 
-    generate_environment(env_width, env_height, env_depth) {
-        super.generate_environment(env_width, env_height, env_depth);
+    _generate_environment(env_width, env_height, env_depth) {
+        super._generate_environment(env_width, env_height, env_depth);
         this.num_ornaments = 5;
         this.room = createRoomWithOrnaments(
             env_width,
@@ -35,6 +35,14 @@ export default class CalibrationRoomEnv extends GenericEnv {
         );
         this.scene.add(this.room);
         return this.scene;
+    }
+
+    generate() {
+        return this._generate_environment(
+            this.settings.sceneWindow.width,
+            this.settings.sceneWindow.height,
+            this.settings.sceneWindow.width
+        );
     }
 
     getInitialPortalPose() {
