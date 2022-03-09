@@ -121,7 +121,7 @@ function create_marker(markerLength) {
     return line;
 }
 
-async function create_display_axis(prefix, textColor) {
+export async function create_display_axis(prefix, textColor) {
     const axisLength = 20;
     const markerLength = 0.1;
     const markerInterval = 0.5;

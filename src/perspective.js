@@ -16,8 +16,6 @@ const pose = {
     rawPosition: { x: 0.0, y: -0.0, z: 0.0 },
 };
 
-let refMesh;
-
 function initRenderer() {
     const container = document.getElementById("3dviewcontainer");
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -46,8 +44,7 @@ function getCurrentEnvironment() {
 
 function init() {
     initRenderer();
-    let current_environment = getCurrentEnvironment();
-    refMesh = current_environment.worldWindow;
+    let refMesh = getWindowRefMesh();
 
     websocketClient = new WebsocketClient(settings, pose);
     perspectiveGUI = new PerspectiveGUI(settings, websocketClient);
@@ -61,6 +58,7 @@ function init() {
 }
 
 function updatePortalCameraPerspective() {
+    let refMesh = getWindowRefMesh();
     const refMeshBottomLeft = new THREE.Vector3();
     const refMeshBottomRight = new THREE.Vector3();
     const refMeshTopLeft = new THREE.Vector3();
@@ -98,6 +96,7 @@ function updatePortalCameraPerspective() {
 }
 
 function getHeadCoordsAndMoveCamera() {
+    let refMesh = getWindowRefMesh();
     let camera_position = new THREE.Vector3(0, 0, 0);
     let headPosition = settings.headtracking.SHOULD_USE_RAW_POSITION
         ? pose.position
@@ -125,6 +124,7 @@ function getHeadCoordsAndMoveCamera() {
 }
 
 function updateRefMeshDimensionsAndMaterial() {
+    let refMesh = getWindowRefMesh();
     refMesh.scale.x =
         settings.sceneWindow.width / settings.sceneWindowWidthInitial;
     refMesh.scale.y =
@@ -143,6 +143,10 @@ function animateEnvironment() {
 
 function getCameras() {
     return getCurrentEnvironment().cameras;
+}
+
+function getWindowRefMesh() {
+    return getCurrentEnvironment().worldWindow;
 }
 
 function animate() {

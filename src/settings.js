@@ -46,7 +46,7 @@ let settings = {
         rotateX: 0, //offset
         rotateY: 0, //offset
         rotateZ: 0, //offset
-        IS_REFMESH_TRANSPARENT: false,
+        IS_REFMESH_TRANSPARENT: true,
     },
     portalCamOffset: {
         x: 0,
@@ -66,7 +66,7 @@ let settings = {
     USE_MAIN_CAMERA_FOR_VIEW: false,
     updateSettingsWithNewRendererDims: updateSettingsWithNewRendererDims,
     environment: {
-        current_environment: "Calibration Room",
+        current_environment: "Littlest Tokyo",
         available_environments: {
             "Calibration Room": EnvCalibrationRoom,
             "Littlest Tokyo": EnvLittlestTokyo,

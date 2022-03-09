@@ -31,7 +31,7 @@ export default class Cameras {
             this.settings.sceneWindowWidthInitial /
                 this.settings.sceneWindowHeightInitial,
             0.1,
-            10.0
+            100.0
         );
 
         this.mainCamera.position.set(-3, 3, 3.0);
@@ -76,7 +76,7 @@ export default class Cameras {
             this.mainCamera,
             this.renderer.domElement
         );
-        this.cameraControls.movementSpeed = 5;
+        this.cameraControls.movementSpeed = 25;
         this.cameraControls.domElement = this.renderer.domElement;
         this.cameraControls.rollSpeed = Math.PI / 2;
         this.cameraControls.autoForward = false;
