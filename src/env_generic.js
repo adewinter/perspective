@@ -6,6 +6,7 @@ export default class GenericEnv {
         this.settings = settings;
         this.renderer = renderer;
         this.worldWindow = this.createWorldWindow();
+        window._win = this.worldWindow;
 
         this.scene = new THREE.Scene();
         this.scene.add(this.worldWindow);
@@ -49,15 +50,15 @@ export default class GenericEnv {
 
     getInitialPortalPose() {
         // [x, y, z, rotX, rotY, rotZ];
-        const x = settings.sceneWindow.x;
-        const y = settings.sceneWindow.y;
-        const z = settings.sceneWindow.z;
+        const x = this.settings.sceneWindow.x;
+        const y = this.settings.sceneWindow.y;
+        const z = this.settings.sceneWindow.z;
         return [x, y, z, 0, 0, 0];
     }
 
     setWorldWindowInitialPose() {
         const initialPose = this.getInitialPortalPose();
-
+        console.log("ok");
         //update the settins object in case that's not where
         //the initial pose came from.  This is important
         //because the GUI uses the values in the settings

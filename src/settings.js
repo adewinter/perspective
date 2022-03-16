@@ -1,5 +1,6 @@
 import EnvCalibrationRoom, * as roomGenerator from "./room_generate.js";
 import EnvLittlestTokyo from "./env_littlest_tokyo.js";
+import EnvRoom3 from "./env_room3.js";
 
 const LOGITECH_C720P_HORIZONTAL_FOV_DEGREES = 31.3;
 const LOGITECH_C720P_VERTICAL_FOV_DEGREES = 29.9;
@@ -52,8 +53,8 @@ let settings = {
         x: 0,
         y: 0,
         z: 0.2257,
-        scaleX: -1.476,
-        scaleY: -1.086,
+        scaleX: -1,
+        scaleY: -1,
         scaleZ: 1,
         lockX: false,
         lockY: false,
@@ -62,14 +63,15 @@ let settings = {
     headtracking: {
         SHOULD_USE_RAW_POSITION: false,
     },
-    USE_PORTAL_CAMERA_HELPER: true,
+    USE_PORTAL_CAMERA_HELPER: false,
     USE_MAIN_CAMERA_FOR_VIEW: false,
     updateSettingsWithNewRendererDims: updateSettingsWithNewRendererDims,
     environment: {
-        current_environment: "Calibration Room",
+        current_environment: "Room 3",
         available_environments: {
             "Calibration Room": EnvCalibrationRoom,
             "Littlest Tokyo": EnvLittlestTokyo,
+            "Room 3": EnvRoom3,
         },
     },
 };
