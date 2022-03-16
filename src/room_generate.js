@@ -26,7 +26,7 @@ export default class CalibrationRoomEnv extends GenericEnv {
 
     _generate_environment(env_width, env_height, env_depth) {
         super._generate_environment(env_width, env_height, env_depth);
-        this.num_ornaments = 5;
+        this.num_ornaments = 25;
         this.room = createRoomWithOrnaments(
             env_width,
             env_height,
@@ -39,9 +39,9 @@ export default class CalibrationRoomEnv extends GenericEnv {
 
     generate() {
         return this._generate_environment(
-            this.settings.sceneWindow.width,
-            this.settings.sceneWindow.height,
-            this.settings.sceneWindow.width
+            this.settings.sceneWindow.width * 3,
+            this.settings.sceneWindow.height * 3,
+            this.settings.sceneWindow.width * 20
         );
     }
 
@@ -333,7 +333,7 @@ export function createRoomWithOrnaments(
         yPositionsAlreadySeen.push(randY);
 
         ornament.position.x = randX - roomWidth / 2 + ornamentSize / 2;
-        ornament.position.z = randZ - roomDepth + ornamentSize / 2; //+ roomHeight;
+        ornament.position.z = randZ - roomDepth / 2 + ornamentSize / 2; //+ roomHeight;
         ornament.position.y = randY;
 
         room.add(ornament);

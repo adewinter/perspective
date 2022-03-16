@@ -66,7 +66,7 @@ let settings = {
     USE_MAIN_CAMERA_FOR_VIEW: false,
     updateSettingsWithNewRendererDims: updateSettingsWithNewRendererDims,
     environment: {
-        current_environment: "Littlest Tokyo",
+        current_environment: "Calibration Room",
         available_environments: {
             "Calibration Room": EnvCalibrationRoom,
             "Littlest Tokyo": EnvLittlestTokyo,
