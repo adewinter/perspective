@@ -169,6 +169,9 @@ function createWallMesh(width, height) {
     return new THREE.TextureLoader()
         .loadAsync("/check.png")
         .then(function (texture) {
+            texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(50, 5);
+            texture.anisotropy = 5;
             const geometry = new THREE.PlaneGeometry(width, height);
             const material = new THREE.MeshPhongMaterial({
                 side: THREE.DoubleSide,
